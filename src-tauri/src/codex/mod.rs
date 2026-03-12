@@ -514,7 +514,13 @@ pub(crate) async fn model_list(
         .await;
     }
 
-    codex_core::model_list_core(&state.sessions, workspace_id).await
+    crate::shared::provider_runtime_core::model_list_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]

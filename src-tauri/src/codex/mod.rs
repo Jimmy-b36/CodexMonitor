@@ -494,7 +494,13 @@ pub(crate) async fn collaboration_mode_list(
         .await;
     }
 
-    codex_core::collaboration_mode_list_core(&state.sessions, workspace_id).await
+    crate::shared::provider_runtime_core::collaboration_mode_list_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -515,7 +521,15 @@ pub(crate) async fn turn_interrupt(
         .await;
     }
 
-    codex_core::turn_interrupt_core(&state.sessions, workspace_id, thread_id, turn_id).await
+    crate::shared::provider_runtime_core::turn_interrupt_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        thread_id,
+        turn_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -601,7 +615,15 @@ pub(crate) async fn experimental_feature_list(
         .await;
     }
 
-    codex_core::experimental_feature_list_core(&state.sessions, workspace_id, cursor, limit).await
+    crate::shared::provider_runtime_core::experimental_feature_list_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        cursor,
+        limit,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -770,7 +792,13 @@ pub(crate) async fn account_rate_limits(
         .await;
     }
 
-    codex_core::account_rate_limits_core(&state.sessions, workspace_id).await
+    crate::shared::provider_runtime_core::account_rate_limits_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -789,7 +817,13 @@ pub(crate) async fn account_read(
         .await;
     }
 
-    codex_core::account_read_core(&state.sessions, &state.workspaces, workspace_id).await
+    crate::shared::provider_runtime_core::account_read_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -808,7 +842,14 @@ pub(crate) async fn codex_login(
         .await;
     }
 
-    codex_core::codex_login_core(&state.sessions, &state.codex_login_cancels, workspace_id).await
+    crate::shared::provider_runtime_core::codex_login_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        &state.codex_login_cancels,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -827,8 +868,14 @@ pub(crate) async fn codex_login_cancel(
         .await;
     }
 
-    codex_core::codex_login_cancel_core(&state.sessions, &state.codex_login_cancels, workspace_id)
-        .await
+    crate::shared::provider_runtime_core::codex_login_cancel_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        &state.codex_login_cancels,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -847,7 +894,13 @@ pub(crate) async fn skills_list(
         .await;
     }
 
-    codex_core::skills_list_core(&state.sessions, &state.workspaces, workspace_id).await
+    crate::shared::provider_runtime_core::skills_list_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -874,7 +927,16 @@ pub(crate) async fn apps_list(
         .await;
     }
 
-    codex_core::apps_list_core(&state.sessions, workspace_id, cursor, limit, thread_id).await
+    crate::shared::provider_runtime_core::apps_list_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        cursor,
+        limit,
+        thread_id,
+    )
+    .await
 }
 
 #[tauri::command]

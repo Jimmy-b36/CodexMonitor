@@ -39,6 +39,7 @@ function makeSelectionParams(): SelectionParams & {
     setSelectedServiceTier: vi.fn(),
     setSelectedCollaborationModeId: vi.fn(),
     setAccessMode,
+    activeAgentProvider: "codex",
     setSelectedCodexArgsOverride,
     persistThreadCodexParams,
   };
@@ -136,6 +137,24 @@ describe("useThreadSelectionHandlersOrchestration codex args selection", () => {
       codexArgsOverride: "--profile dev --config codex.toml",
     });
     expect(pushErrorToast).not.toHaveBeenCalled();
+  });
+
+  it("uses provider-specific wording in ignored-args warning titles", () => {
+    const params = makeSelectionParams();
+    params.activeAgentProvider = "copilot";
+    const { result } = renderHook(() => useThreadSelectionHandlersOrchestration(params));
+
+    act(() => {
+      result.current.handleSelectCodexArgsOverride(
+        "--profile dev --model gpt-5 --sandbox workspace-write",
+      );
+    });
+
+    expect(pushErrorToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Some Copilot args are ignored",
+      }),
+    );
   });
 
   it("persists service tier selections per thread", () => {

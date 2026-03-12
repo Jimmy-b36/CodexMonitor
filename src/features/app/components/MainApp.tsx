@@ -47,7 +47,10 @@ import { useMainAppSidebarMenuOrchestration } from "@app/hooks/useMainAppSidebar
 import { useMainAppWorktreeState } from "@app/hooks/useMainAppWorktreeState";
 import { useMainAppWorkspaceActions } from "@app/hooks/useMainAppWorkspaceActions";
 import { useMainAppWorkspaceLifecycle } from "@app/hooks/useMainAppWorkspaceLifecycle";
-import { resolveWorkspaceProviderCapabilities } from "@app/utils/providerCapabilities";
+import {
+  resolveWorkspaceAgentProvider,
+  resolveWorkspaceProviderCapabilities,
+} from "@app/utils/providerCapabilities";
 import type {
   ComposerEditorSettings,
   ServiceTier,
@@ -195,6 +198,10 @@ export default function MainApp() {
   );
   const activeProviderCapabilities = useMemo(
     () => resolveWorkspaceProviderCapabilities(appSettings, activeWorkspace),
+    [activeWorkspace, appSettings],
+  );
+  const activeAgentProvider = useMemo(
+    () => resolveWorkspaceAgentProvider(appSettings, activeWorkspace),
     [activeWorkspace, appSettings],
   );
   const {
@@ -357,6 +364,7 @@ export default function MainApp() {
     setSelectedCollaborationModeId,
     setAccessMode,
     setSelectedCodexArgsOverride,
+    activeAgentProvider,
     persistThreadCodexParams,
   });
   const commitMessageModelId = useMemo(
@@ -1832,6 +1840,7 @@ export default function MainApp() {
     codexArgsOptions,
     selectedCodexArgsOverride,
     onSelectCodexArgsOverride: handleSelectCodexArgsOverride,
+    activeAgentProvider,
     accessMode,
     onSelectAccessMode: handleSelectAccessMode,
     skills,

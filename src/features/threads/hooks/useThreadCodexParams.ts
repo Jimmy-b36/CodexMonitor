@@ -13,6 +13,7 @@ type ThreadCodexParamsPatch = Partial<
   Pick<
     ThreadCodexParams,
     | "modelId"
+    | "methodId"
     | "effort"
     | "serviceTier"
     | "accessMode"
@@ -34,6 +35,7 @@ type UseThreadCodexParamsResult = {
 
 const DEFAULT_ENTRY: ThreadCodexParams = {
   modelId: null,
+  methodId: null,
   effort: null,
   serviceTier: undefined,
   accessMode: null,
@@ -82,6 +84,7 @@ function sanitizeEntry(value: unknown): ThreadCodexParams | null {
     : undefined;
   return {
     modelId: typeof entry.modelId === "string" ? entry.modelId : null,
+    methodId: typeof entry.methodId === "string" ? entry.methodId : null,
     effort: typeof entry.effort === "string" ? entry.effort : null,
     serviceTier,
     accessMode: coerceAccessMode(entry.accessMode),

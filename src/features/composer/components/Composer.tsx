@@ -69,6 +69,9 @@ type ComposerProps = {
   models: { id: string; displayName: string; model: string }[];
   selectedModelId: string | null;
   onSelectModel: (id: string) => void;
+  methodOptions?: { id: string; label: string }[];
+  selectedMethodId?: string | null;
+  onSelectMethod?: (id: string | null) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
   onSelectEffort: (effort: string) => void;
@@ -179,6 +182,9 @@ export const Composer = memo(function Composer({
   models,
   selectedModelId,
   onSelectModel,
+  methodOptions = [],
+  selectedMethodId = null,
+  onSelectMethod,
   reasoningOptions,
   selectedEffort,
   onSelectEffort,
@@ -865,6 +871,9 @@ export const Composer = memo(function Composer({
         models={models}
         selectedModelId={selectedModelId}
         onSelectModel={onSelectModel}
+        methodOptions={methodOptions}
+        selectedMethodId={selectedMethodId}
+        onSelectMethod={onSelectMethod}
         reasoningOptions={reasoningOptions}
         selectedEffort={selectedEffort}
         onSelectEffort={onSelectEffort}

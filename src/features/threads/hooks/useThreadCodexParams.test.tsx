@@ -15,6 +15,7 @@ describe("useThreadCodexParams", () => {
     act(() => {
       result.current.patchThreadCodexParams("ws-1", "thread-1", {
         modelId: "gpt-5.1",
+        methodId: "balanced",
         effort: "high",
         serviceTier: "fast",
         accessMode: "full-access",
@@ -26,6 +27,7 @@ describe("useThreadCodexParams", () => {
     expect(result.current.getThreadCodexParams("ws-1", "thread-1")).toEqual(
       expect.objectContaining({
         modelId: "gpt-5.1",
+        methodId: "balanced",
         effort: "high",
         serviceTier: "fast",
         accessMode: "full-access",
@@ -46,6 +48,7 @@ describe("useThreadCodexParams", () => {
       JSON.stringify({
         "ws-1:thread-1": {
           modelId: "gpt-4.1",
+          methodId: 999,
           effort: "medium",
           serviceTier: "nope",
           accessMode: "nope",
@@ -60,6 +63,7 @@ describe("useThreadCodexParams", () => {
 
     expect(result.current.getThreadCodexParams("ws-1", "thread-1")).toEqual({
       modelId: "gpt-4.1",
+      methodId: null,
       effort: "medium",
       serviceTier: null,
       accessMode: null,
@@ -88,6 +92,7 @@ describe("useThreadCodexParams", () => {
     expect(legacy).toEqual(
       expect.objectContaining({
         modelId: "gpt-4.1",
+        methodId: null,
         effort: "medium",
         accessMode: "current",
         collaborationModeId: "default",
@@ -106,6 +111,7 @@ describe("useThreadCodexParams", () => {
       JSON.stringify({
         "ws-1:thread-2": {
           modelId: "gpt-5",
+          methodId: "fast",
           effort: "low",
           serviceTier: "fast",
           accessMode: "current",
@@ -128,6 +134,7 @@ describe("useThreadCodexParams", () => {
 
     expect(result.current.getThreadCodexParams("ws-1", "thread-2")).toEqual({
       modelId: "gpt-5",
+      methodId: "fast",
       effort: "low",
       serviceTier: "fast",
       accessMode: "current",

@@ -16,6 +16,7 @@ type DetachedReviewLinksMap = Record<string, Record<string, string>>;
 // These are UI-level preferences (not server state) and are best-effort persisted.
 export type ThreadCodexParams = {
   modelId: string | null;
+  methodId: string | null;
   effort: string | null;
   // string => explicit per-thread tier override
   // null => explicit "Default/off" override

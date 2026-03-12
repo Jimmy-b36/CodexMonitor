@@ -44,6 +44,7 @@ type UseThreadsOptions = {
     threadId: string | null,
   ) => Promise<void>;
   model?: string | null;
+  method?: string | null;
   effort?: string | null;
   serviceTier?: ServiceTier | null | undefined;
   collaborationMode?: Record<string, unknown> | null;
@@ -75,6 +76,7 @@ export function useThreads({
   onDebug,
   ensureWorkspaceRuntimeCodexArgs,
   model,
+  method,
   effort,
   serviceTier,
   collaborationMode,
@@ -749,6 +751,7 @@ export function useThreads({
     activeThreadId,
     accessMode,
     model,
+    method,
     effort,
     serviceTier,
     collaborationMode,

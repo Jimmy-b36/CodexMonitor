@@ -26,6 +26,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 type PersistThreadCodexParams = (
   patch: {
     modelId?: string | null;
+    methodId?: string | null;
     effort?: string | null;
     serviceTier?: ServiceTier | null | undefined;
     accessMode?: AccessMode | null;
@@ -40,6 +41,7 @@ type UseThreadSelectionHandlersOrchestrationParams = {
   queueSaveSettings: (next: AppSettings) => Promise<AppSettings | void>;
   activeThreadIdRef: MutableRefObject<string | null>;
   setSelectedModelId: (id: string | null) => void;
+  setSelectedMethodId: (id: string | null) => void;
   setSelectedEffort: (effort: string | null) => void;
   setSelectedServiceTier: (tier: ServiceTier | null | undefined) => void;
   setSelectedCollaborationModeId: (id: string | null) => void;
@@ -65,6 +67,7 @@ type UseThreadCodexSyncOrchestrationParams = {
   setThreadCodexSelectionKey: SetState<string | null>;
   setAccessMode: SetState<AccessMode>;
   setPreferredModelId: SetState<string | null>;
+  setPreferredMethodId: SetState<string | null>;
   setPreferredEffort: SetState<string | null>;
   setPreferredServiceTier: SetState<ServiceTier | null | undefined>;
   setPreferredCollabModeId: SetState<string | null>;
@@ -72,6 +75,7 @@ type UseThreadCodexSyncOrchestrationParams = {
   activeThreadIdRef: MutableRefObject<string | null>;
   pendingNewThreadSeedRef: MutableRefObject<PendingNewThreadSeed | null>;
   selectedModelId: string | null;
+  selectedMethodId: string | null;
   resolvedEffort: string | null;
   selectedServiceTier: ServiceTier | null | undefined;
   accessMode: AccessMode;
@@ -93,6 +97,7 @@ type UseThreadUiOrchestrationParams = {
   activeThreadId: string | null;
   accessMode: AccessMode;
   selectedServiceTier: ServiceTier | null | undefined;
+  selectedMethodId: string | null;
   selectedCollaborationModeId: string | null;
   selectedCodexArgsOverride?: string | null;
   pendingNewThreadSeedRef: MutableRefObject<PendingNewThreadSeed | null>;
@@ -132,6 +137,7 @@ export function useThreadCodexSyncOrchestration({
   setThreadCodexSelectionKey,
   setAccessMode,
   setPreferredModelId,
+  setPreferredMethodId,
   setPreferredEffort,
   setPreferredServiceTier,
   setPreferredCollabModeId,
@@ -139,6 +145,7 @@ export function useThreadCodexSyncOrchestration({
   activeThreadIdRef,
   pendingNewThreadSeedRef,
   selectedModelId,
+  selectedMethodId,
   resolvedEffort,
   selectedServiceTier,
   accessMode,
@@ -173,6 +180,7 @@ export function useThreadCodexSyncOrchestration({
     setThreadCodexSelectionKey(resolved.scopeKey);
     setAccessMode(resolved.accessMode);
     setPreferredModelId(resolved.preferredModelId);
+    setPreferredMethodId(resolved.preferredMethodId);
     setPreferredEffort(resolved.preferredEffort);
     setPreferredServiceTier(resolved.preferredServiceTier);
     setPreferredCollabModeId(resolved.preferredCollabModeId);
@@ -187,6 +195,7 @@ export function useThreadCodexSyncOrchestration({
     setPreferredCollabModeId,
     setPreferredCodexArgsOverride,
     setPreferredEffort,
+    setPreferredMethodId,
     setPreferredModelId,
     setPreferredServiceTier,
     setThreadCodexSelectionKey,
@@ -223,6 +232,7 @@ export function useThreadCodexSyncOrchestration({
       buildThreadCodexSeedPatch({
         workspaceId,
         selectedModelId,
+        selectedMethodId,
         resolvedEffort,
         accessMode,
         selectedCollaborationModeId,
@@ -245,6 +255,7 @@ export function useThreadCodexSyncOrchestration({
     resolvedEffort,
     selectedCollaborationModeId,
     selectedCodexArgsOverride,
+    selectedMethodId,
     selectedModelId,
     pendingNewThreadSeedRef,
   ]);
@@ -279,6 +290,7 @@ export function useThreadSelectionHandlersOrchestration({
   queueSaveSettings,
   activeThreadIdRef,
   setSelectedModelId,
+  setSelectedMethodId,
   setSelectedEffort,
   setSelectedServiceTier,
   setSelectedCollaborationModeId,
@@ -339,6 +351,14 @@ export function useThreadSelectionHandlersOrchestration({
     ],
   );
 
+  const handleSelectMethod = useCallback(
+    (id: string | null) => {
+      setSelectedMethodId(id);
+      persistThreadCodexParams({ methodId: id });
+    },
+    [persistThreadCodexParams, setSelectedMethodId],
+  );
+
   const handleSelectServiceTier = useCallback(
     (tier: ServiceTier | null | undefined) => {
       setSelectedServiceTier(tier);
@@ -380,6 +400,7 @@ export function useThreadSelectionHandlersOrchestration({
 
   return {
     handleSelectModel,
+    handleSelectMethod,
     handleSelectEffort,
     handleSelectServiceTier,
     handleSelectCollaborationMode,
@@ -393,6 +414,7 @@ export function useThreadUiOrchestration({
   activeThreadId,
   accessMode,
   selectedServiceTier,
+  selectedMethodId,
   selectedCollaborationModeId,
   selectedCodexArgsOverride,
   pendingNewThreadSeedRef,
@@ -414,6 +436,7 @@ export function useThreadUiOrchestration({
       activeThreadId: activeThreadId ?? null,
       activeWorkspaceId: activeWorkspaceId ?? null,
       selectedServiceTier,
+      selectedMethodId,
       selectedCollaborationModeId,
       accessMode,
       codexArgsOverride: selectedCodexArgsOverride ?? null,
@@ -423,6 +446,7 @@ export function useThreadUiOrchestration({
     activeThreadId,
     activeWorkspaceId,
     pendingNewThreadSeedRef,
+    selectedMethodId,
     selectedServiceTier,
     selectedCollaborationModeId,
     selectedCodexArgsOverride,

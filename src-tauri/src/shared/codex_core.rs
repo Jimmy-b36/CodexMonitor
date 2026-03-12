@@ -388,6 +388,7 @@ pub(crate) async fn send_user_message_core(
     thread_id: String,
     text: String,
     model: Option<String>,
+    method: Option<String>,
     effort: Option<String>,
     service_tier: Option<Option<String>>,
     access_mode: Option<String>,
@@ -423,6 +424,7 @@ pub(crate) async fn send_user_message_core(
     params.insert("approvalPolicy".to_string(), json!(approval_policy));
     params.insert("sandboxPolicy".to_string(), json!(sandbox_policy));
     params.insert("model".to_string(), json!(model));
+    params.insert("method".to_string(), json!(method));
     params.insert("effort".to_string(), json!(effort));
     insert_optional_nullable_string(&mut params, "serviceTier", service_tier);
     if let Some(mode) = collaboration_mode {

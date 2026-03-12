@@ -145,6 +145,9 @@ type UseMainAppLayoutSurfacesArgs = {
   models: ComposerProps["models"];
   selectedModelId: ComposerProps["selectedModelId"];
   onSelectModel: ComposerProps["onSelectModel"];
+  methodOptions: NonNullable<ComposerProps["methodOptions"]>;
+  selectedMethodId: ComposerProps["selectedMethodId"];
+  onSelectMethod: NonNullable<ComposerProps["onSelectMethod"]>;
   collaborationModes: ComposerProps["collaborationModes"];
   selectedCollaborationModeId: ComposerProps["selectedCollaborationModeId"];
   onSelectCollaborationMode: ComposerProps["onSelectCollaborationMode"];
@@ -304,6 +307,9 @@ export function useMainAppLayoutSurfaces({
   models,
   selectedModelId,
   onSelectModel,
+  methodOptions,
+  selectedMethodId,
+  onSelectMethod,
   collaborationModes,
   selectedCollaborationModeId,
   onSelectCollaborationMode,
@@ -518,6 +524,9 @@ export function useMainAppLayoutSurfaces({
             models,
             selectedModelId,
             onSelectModel,
+            methodOptions,
+            selectedMethodId,
+            onSelectMethod,
             reasoningOptions,
             selectedEffort,
             onSelectEffort,

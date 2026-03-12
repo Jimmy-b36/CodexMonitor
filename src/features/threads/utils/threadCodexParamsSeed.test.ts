@@ -15,6 +15,7 @@ describe("threadCodexParamsSeed", () => {
         activeThreadId: "thread-1",
         activeWorkspaceId: "ws-1",
         selectedServiceTier: "fast",
+        selectedMethodId: "balanced",
         selectedCollaborationModeId: "plan",
         accessMode: "full-access",
         codexArgsOverride: "--profile dev",
@@ -26,6 +27,7 @@ describe("threadCodexParamsSeed", () => {
         activeThreadId: null,
         activeWorkspaceId: null,
         selectedServiceTier: "fast",
+        selectedMethodId: "balanced",
         selectedCollaborationModeId: "plan",
         accessMode: "full-access",
         codexArgsOverride: "--profile dev",
@@ -37,12 +39,14 @@ describe("threadCodexParamsSeed", () => {
         activeThreadId: null,
         activeWorkspaceId: "ws-1",
         selectedServiceTier: "fast",
+        selectedMethodId: "balanced",
         selectedCollaborationModeId: "plan",
         accessMode: "full-access",
         codexArgsOverride: "--profile dev",
       }),
     ).toEqual({
       workspaceId: "ws-1",
+      methodId: "balanced",
       serviceTier: "fast",
       collaborationModeId: "plan",
       accessMode: "full-access",
@@ -59,6 +63,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: "gpt-4.1",
+        methodId: "accurate",
         effort: "low",
         serviceTier: null,
         accessMode: "read-only",
@@ -69,6 +74,7 @@ describe("threadCodexParamsSeed", () => {
       noThreadStored: null,
       pendingSeed: {
         workspaceId: "ws-1",
+        methodId: "balanced",
         serviceTier: "fast",
         collaborationModeId: "plan",
         accessMode: "full-access",
@@ -81,6 +87,7 @@ describe("threadCodexParamsSeed", () => {
       accessMode: "read-only",
       preferredModelId: "gpt-4.1",
       preferredEffort: "low",
+      preferredMethodId: "accurate",
       preferredServiceTier: null,
       preferredCollabModeId: "default",
       preferredCodexArgsOverride: "--profile stored",
@@ -96,6 +103,7 @@ describe("threadCodexParamsSeed", () => {
       noThreadStored: null,
       pendingSeed: {
         workspaceId: "ws-1",
+        methodId: "balanced",
         serviceTier: undefined,
         collaborationModeId: "plan",
         accessMode: "full-access",
@@ -108,6 +116,7 @@ describe("threadCodexParamsSeed", () => {
       accessMode: "full-access",
       preferredModelId: "gpt-5",
       preferredEffort: "medium",
+      preferredMethodId: "balanced",
       preferredServiceTier: undefined,
       preferredCollabModeId: "plan",
       preferredCodexArgsOverride: "--profile pending",
@@ -121,6 +130,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: null,
         accessMode: null,
@@ -131,6 +141,7 @@ describe("threadCodexParamsSeed", () => {
       noThreadStored: null,
       pendingSeed: {
         workspaceId: "ws-1",
+        methodId: "balanced",
         serviceTier: undefined,
         collaborationModeId: "plan",
         accessMode: "full-access",
@@ -148,6 +159,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: null,
         accessMode: null,
@@ -158,6 +170,7 @@ describe("threadCodexParamsSeed", () => {
       noThreadStored: null,
       pendingSeed: {
         workspaceId: "ws-1",
+        methodId: "balanced",
         serviceTier: undefined,
         collaborationModeId: "plan",
         accessMode: "full-access",
@@ -175,6 +188,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: null,
         accessMode: null,
@@ -184,6 +198,7 @@ describe("threadCodexParamsSeed", () => {
       },
       noThreadStored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: null,
         accessMode: null,
@@ -208,6 +223,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: "gpt-4.1",
+        methodId: "balanced",
         effort: "low",
         serviceTier: null,
         accessMode: "read-only",
@@ -224,6 +240,7 @@ describe("threadCodexParamsSeed", () => {
       accessMode: "read-only",
       preferredModelId: "gpt-4.1",
       preferredEffort: "low",
+      preferredMethodId: "balanced",
       preferredServiceTier: null,
       preferredCollabModeId: "plan",
       preferredCodexArgsOverride: "--profile stored",
@@ -239,6 +256,7 @@ describe("threadCodexParamsSeed", () => {
       lastComposerReasoningEffort: "medium",
       stored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: null,
         accessMode: null,
@@ -248,6 +266,7 @@ describe("threadCodexParamsSeed", () => {
       },
       noThreadStored: {
         modelId: null,
+        methodId: null,
         effort: null,
         serviceTier: "fast",
         accessMode: null,
@@ -266,6 +285,7 @@ describe("threadCodexParamsSeed", () => {
       codexArgsOverride: string | null | undefined,
     ): ThreadCodexParams => ({
       modelId: null,
+      methodId: null,
       effort: null,
       serviceTier: null,
       accessMode: null,
@@ -339,6 +359,7 @@ describe("threadCodexParamsSeed", () => {
       codexArgsOverride: string | null | undefined,
     ): ThreadCodexParams => ({
       modelId: null,
+      methodId: null,
       effort: null,
       serviceTier: null,
       accessMode: null,
@@ -377,6 +398,7 @@ describe("threadCodexParamsSeed", () => {
       codexArgsOverride: string | null | undefined,
     ): ThreadCodexParams => ({
       modelId: null,
+      methodId: null,
       effort: null,
       serviceTier: null,
       accessMode: null,
@@ -416,12 +438,14 @@ describe("threadCodexParamsSeed", () => {
       buildThreadCodexSeedPatch({
         workspaceId: "ws-1",
         selectedModelId: "gpt-5",
+        selectedMethodId: "balanced",
         resolvedEffort: "high",
         accessMode: "current",
         selectedCollaborationModeId: "default",
         codexArgsOverride: "--profile composer",
         pendingSeed: {
           workspaceId: "ws-1",
+          methodId: "accurate",
           serviceTier: null,
           collaborationModeId: "plan",
           accessMode: "full-access",
@@ -430,6 +454,7 @@ describe("threadCodexParamsSeed", () => {
       }),
     ).toEqual({
       modelId: "gpt-5",
+      methodId: "accurate",
       effort: "high",
       serviceTier: null,
       accessMode: "full-access",
@@ -441,12 +466,14 @@ describe("threadCodexParamsSeed", () => {
       buildThreadCodexSeedPatch({
         workspaceId: "ws-1",
         selectedModelId: "gpt-5",
+        selectedMethodId: "balanced",
         resolvedEffort: "high",
         accessMode: "current",
         selectedCollaborationModeId: "default",
         codexArgsOverride: "--profile composer",
         pendingSeed: {
           workspaceId: "ws-1",
+          methodId: "accurate",
           serviceTier: "fast",
           collaborationModeId: "plan",
           accessMode: "full-access",
@@ -455,6 +482,7 @@ describe("threadCodexParamsSeed", () => {
       }),
     ).toEqual({
       modelId: "gpt-5",
+      methodId: "accurate",
       effort: "high",
       serviceTier: "fast",
       accessMode: "full-access",
@@ -466,12 +494,14 @@ describe("threadCodexParamsSeed", () => {
       buildThreadCodexSeedPatch({
         workspaceId: "ws-1",
         selectedModelId: "gpt-5",
+        selectedMethodId: "balanced",
         resolvedEffort: "high",
         accessMode: "current",
         selectedCollaborationModeId: "default",
         codexArgsOverride: "--profile composer",
         pendingSeed: {
           workspaceId: "ws-other",
+          methodId: "accurate",
           serviceTier: "fast",
           collaborationModeId: "plan",
           accessMode: "full-access",
@@ -480,6 +510,7 @@ describe("threadCodexParamsSeed", () => {
       }),
     ).toEqual({
       modelId: "gpt-5",
+      methodId: "balanced",
       effort: "high",
       serviceTier: undefined,
       accessMode: "current",
@@ -491,6 +522,7 @@ describe("threadCodexParamsSeed", () => {
       buildThreadCodexSeedPatch({
         workspaceId: "ws-1",
         selectedModelId: "gpt-5",
+        selectedMethodId: "balanced",
         resolvedEffort: "high",
         accessMode: "current",
         selectedCollaborationModeId: "default",
@@ -498,6 +530,7 @@ describe("threadCodexParamsSeed", () => {
       }),
     ).toEqual({
       modelId: "gpt-5",
+      methodId: "balanced",
       effort: "high",
       serviceTier: undefined,
       accessMode: "current",
@@ -509,12 +542,14 @@ describe("threadCodexParamsSeed", () => {
       buildThreadCodexSeedPatch({
         workspaceId: "ws-1",
         selectedModelId: "gpt-5",
+        selectedMethodId: "balanced",
         resolvedEffort: "high",
         accessMode: "current",
         selectedCollaborationModeId: "default",
         codexArgsOverride: "--profile composer",
         pendingSeed: {
           workspaceId: "ws-1",
+          methodId: null,
           serviceTier: null,
           collaborationModeId: null,
           accessMode: "full-access",
@@ -523,6 +558,7 @@ describe("threadCodexParamsSeed", () => {
       }),
     ).toEqual({
       modelId: "gpt-5",
+      methodId: null,
       effort: "high",
       serviceTier: null,
       accessMode: "full-access",

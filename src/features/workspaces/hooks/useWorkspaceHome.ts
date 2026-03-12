@@ -64,6 +64,7 @@ type UseWorkspaceHomeOptions = {
     images?: string[],
     options?: {
       model?: string | null;
+      method?: string | null;
       effort?: string | null;
       serviceTier?: ServiceTier | null | undefined;
       collaborationMode?: Record<string, unknown> | null;

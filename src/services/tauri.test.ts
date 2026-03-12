@@ -682,6 +682,7 @@ describe("tauri invoke wrappers", () => {
       threadId: "thread-1",
       text: "hello",
       model: null,
+      method: null,
       effort: null,
       accessMode: "full-access",
       images: ["image.png"],
@@ -701,8 +702,29 @@ describe("tauri invoke wrappers", () => {
       threadId: "thread-1",
       text: "hello",
       model: null,
+      method: null,
       effort: null,
       serviceTier: null,
+      accessMode: null,
+      images: null,
+    });
+  });
+
+  it("includes method when sending a message", async () => {
+    const invokeMock = vi.mocked(invoke);
+    invokeMock.mockResolvedValueOnce({});
+
+    await sendUserMessage("ws-4", "thread-1", "hello", {
+      method: "balanced",
+    });
+
+    expect(invokeMock).toHaveBeenLastCalledWith("send_user_message", {
+      workspaceId: "ws-4",
+      threadId: "thread-1",
+      text: "hello",
+      model: null,
+      method: "balanced",
+      effort: null,
       accessMode: null,
       images: null,
     });
@@ -746,6 +768,7 @@ describe("tauri invoke wrappers", () => {
       threadId: "thread-1",
       text: "hello",
       model: null,
+      method: null,
       effort: null,
       accessMode: null,
       images: ["data:image/png;base64,abc"],
@@ -765,6 +788,7 @@ describe("tauri invoke wrappers", () => {
       threadId: "thread-1",
       text: "hello $calendar",
       model: null,
+      method: null,
       effort: null,
       accessMode: null,
       images: null,
@@ -843,6 +867,7 @@ describe("tauri invoke wrappers", () => {
       threadId: "thread-1",
       text: "hello",
       model: null,
+      method: null,
       effort: null,
       accessMode: null,
       images: ["data:image/png;base64,mobile"],

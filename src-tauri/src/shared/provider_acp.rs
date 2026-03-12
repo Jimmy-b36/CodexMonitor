@@ -16,6 +16,7 @@ pub(crate) enum ProviderErrorCode {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) struct ProviderCapabilities {
     pub(crate) thread_start: bool,
     pub(crate) thread_resume: bool,
@@ -35,6 +36,7 @@ pub(crate) struct ProviderCapabilities {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) struct ProviderDescriptor {
     pub(crate) id: AgentProvider,
     pub(crate) label: String,
@@ -44,6 +46,7 @@ pub(crate) struct ProviderDescriptor {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) enum ProviderConnectionState {
     Connected,
     Disconnected,
@@ -53,6 +56,7 @@ pub(crate) enum ProviderConnectionState {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) struct ProviderSessionHandle {
     pub(crate) workspace_id: String,
     pub(crate) provider_id: AgentProvider,
@@ -61,6 +65,7 @@ pub(crate) struct ProviderSessionHandle {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) struct ProviderRequestContext {
     pub(crate) workspace_id: String,
     #[serde(default)]
@@ -81,6 +86,7 @@ pub(crate) struct ProviderError {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub(crate) struct CanonicalEvent {
     pub(crate) workspace_id: String,
     pub(crate) method: String,
@@ -90,6 +96,7 @@ pub(crate) struct CanonicalEvent {
     pub(crate) raw: Option<Value>,
 }
 
+#[allow(dead_code)]
 pub(crate) fn resolve_agent_provider(
     workspace_settings: Option<&WorkspaceSettings>,
     app_settings: &AppSettings,

@@ -47,6 +47,7 @@ import { useMainAppSidebarMenuOrchestration } from "@app/hooks/useMainAppSidebar
 import { useMainAppWorktreeState } from "@app/hooks/useMainAppWorktreeState";
 import { useMainAppWorkspaceActions } from "@app/hooks/useMainAppWorkspaceActions";
 import { useMainAppWorkspaceLifecycle } from "@app/hooks/useMainAppWorkspaceLifecycle";
+import { resolveWorkspaceProviderCapabilities } from "@app/utils/providerCapabilities";
 import type {
   ComposerEditorSettings,
   ServiceTier,
@@ -192,6 +193,10 @@ export default function MainApp() {
     () => new Map(workspaces.map((workspace) => [workspace.id, workspace])),
     [workspaces],
   );
+  const activeProviderCapabilities = useMemo(
+    () => resolveWorkspaceProviderCapabilities(appSettings, activeWorkspace),
+    [activeWorkspace, appSettings],
+  );
   const {
     threadCodexParamsVersion,
     getThreadCodexParams,
@@ -305,7 +310,9 @@ export default function MainApp() {
     setSelectedCollaborationModeId,
   } = useCollaborationModes({
     activeWorkspace,
-    enabled: appSettings.collaborationModesEnabled,
+    enabled:
+      appSettings.collaborationModesEnabled &&
+      activeProviderCapabilities.collaborationModes,
     preferredModeId: preferredCollabModeId,
     selectionKey: threadCodexSelectionKey,
     onDebug: addDebugEntry,
@@ -353,7 +360,9 @@ export default function MainApp() {
     modelShortcut: appSettings.composerModelShortcut,
     accessShortcut: appSettings.composerAccessShortcut,
     reasoningShortcut: appSettings.composerReasoningShortcut,
-    collaborationShortcut: appSettings.collaborationModesEnabled
+    collaborationShortcut:
+      appSettings.collaborationModesEnabled &&
+      activeProviderCapabilities.collaborationModes
       ? appSettings.composerCollaborationShortcut
       : null,
     models,
@@ -741,7 +750,8 @@ export default function MainApp() {
   const { apps } = useApps({
     activeWorkspace,
     activeThreadId,
-    enabled: appSettings.experimentalAppsEnabled,
+    enabled:
+      appSettings.experimentalAppsEnabled && activeProviderCapabilities.appsList,
     onDebug: addDebugEntry,
   });
 
@@ -1673,6 +1683,7 @@ export default function MainApp() {
       openAppTargets: appSettings.openAppTargets,
       selectedOpenAppId: appSettings.selectedOpenAppId,
       experimentalAppsEnabled: appSettings.experimentalAppsEnabled,
+      defaultAgentProvider: appSettings.defaultAgentProvider,
       followUpMessageBehavior: appSettings.followUpMessageBehavior,
       composerFollowUpHintEnabled: appSettings.composerFollowUpHintEnabled,
       dictationEnabled: appSettings.dictationEnabled,

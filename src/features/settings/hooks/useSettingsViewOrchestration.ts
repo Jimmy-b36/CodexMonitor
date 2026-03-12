@@ -18,6 +18,9 @@ import { useSettingsGitSection } from "./useSettingsGitSection";
 import { useSettingsAgentsSection } from "./useSettingsAgentsSection";
 import { useSettingsProjectsSection } from "./useSettingsProjectsSection";
 import { useSettingsServerSection } from "./useSettingsServerSection";
+import {
+  resolveWorkspaceProviderCapabilities,
+} from "@app/utils/providerCapabilities";
 import type { GroupedWorkspaces } from "./settingsSectionTypes";
 import {
   COMPOSER_PRESET_CONFIGS,
@@ -108,6 +111,14 @@ export function useSettingsViewOrchestration({
     () => projects.find((workspace) => workspace.connected)?.id ?? null,
     [projects],
   );
+  const featureWorkspace = useMemo(
+    () => projects.find((workspace) => workspace.id === featureWorkspaceId) ?? null,
+    [featureWorkspaceId, projects],
+  );
+  const featureWorkspaceCapabilities = useMemo(
+    () => resolveWorkspaceProviderCapabilities(appSettings, featureWorkspace),
+    [appSettings, featureWorkspace],
+  );
 
   const optionKeyLabel = isMacPlatform() ? "Option" : "Alt";
   const metaKeyLabel = isMacPlatform()
@@ -157,6 +168,7 @@ export function useSettingsViewOrchestration({
     ungroupedLabel,
     projects,
     onUpdateAppSettings,
+    onUpdateWorkspaceSettings,
     onMoveWorkspace,
     onDeleteWorkspace,
     onCreateWorkspaceGroup,
@@ -205,6 +217,7 @@ export function useSettingsViewOrchestration({
   const featuresSectionProps = useSettingsFeaturesSection({
     appSettings,
     featureWorkspaceId,
+    featureFlagsSupported: featureWorkspaceCapabilities.featureFlags,
     onUpdateAppSettings,
   });
 

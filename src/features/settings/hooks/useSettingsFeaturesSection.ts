@@ -10,6 +10,7 @@ import {
 type UseSettingsFeaturesSectionArgs = {
   appSettings: AppSettings;
   featureWorkspaceId: string | null;
+  featureFlagsSupported: boolean;
   onUpdateAppSettings: (next: AppSettings) => Promise<void>;
 };
 
@@ -21,6 +22,7 @@ const HIDDEN_DYNAMIC_FEATURE_KEYS = new Set<string>([
 
 export type SettingsFeaturesSectionProps = {
   appSettings: AppSettings;
+  featureFlagsSupported: boolean;
   hasFeatureWorkspace: boolean;
   openConfigError: string | null;
   featureError: string | null;
@@ -140,6 +142,7 @@ function mapFeatureToAppSettings(
 export const useSettingsFeaturesSection = ({
   appSettings,
   featureWorkspaceId,
+  featureFlagsSupported,
   onUpdateAppSettings,
 }: UseSettingsFeaturesSectionArgs): SettingsFeaturesSectionProps => {
   const [openConfigError, setOpenConfigError] = useState<string | null>(null);
@@ -162,7 +165,7 @@ export const useSettingsFeaturesSection = ({
 
   useEffect(() => {
     let active = true;
-    if (!featureWorkspaceId) {
+    if (!featureWorkspaceId || !featureFlagsSupported) {
       setFeatures([]);
       setFeatureError(null);
       setFeaturesLoading(false);
@@ -222,7 +225,7 @@ export const useSettingsFeaturesSection = ({
     return () => {
       active = false;
     };
-  }, [featureWorkspaceId]);
+  }, [featureFlagsSupported, featureWorkspaceId]);
 
   const stableFeatures = useMemo(
     () =>
@@ -284,6 +287,7 @@ export const useSettingsFeaturesSection = ({
 
   return {
     appSettings,
+    featureFlagsSupported,
     hasFeatureWorkspace: featureWorkspaceId != null,
     openConfigError,
     featureError,

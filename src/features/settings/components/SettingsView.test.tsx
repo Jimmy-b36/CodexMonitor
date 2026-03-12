@@ -429,6 +429,66 @@ const renderEnvironmentsSection = (
   return { onUpdateWorkspaceSettings };
 };
 
+const renderProjectsSection = (
+  options: {
+    groupedWorkspaces?: ComponentProps<typeof SettingsView>["groupedWorkspaces"];
+    onUpdateWorkspaceSettings?: ComponentProps<typeof SettingsView>["onUpdateWorkspaceSettings"];
+  } = {},
+) => {
+  cleanup();
+  const onUpdateWorkspaceSettings =
+    options.onUpdateWorkspaceSettings ?? vi.fn().mockResolvedValue(undefined);
+
+  const props: ComponentProps<typeof SettingsView> = {
+    reduceTransparency: false,
+    onToggleTransparency: vi.fn(),
+    appSettings: baseSettings,
+    openAppIconById: {},
+    onUpdateAppSettings: vi.fn().mockResolvedValue(undefined),
+    workspaceGroups: [],
+    groupedWorkspaces:
+      options.groupedWorkspaces ??
+      [
+        {
+          id: null,
+          name: "Ungrouped",
+          workspaces: [
+            workspace({
+              id: "w1",
+              name: "Project One",
+              settings: {
+                sidebarCollapsed: false,
+              },
+            }),
+          ],
+        },
+      ],
+    ungroupedLabel: "Ungrouped",
+    onClose: vi.fn(),
+    onMoveWorkspace: vi.fn(),
+    onDeleteWorkspace: vi.fn(),
+    onCreateWorkspaceGroup: vi.fn().mockResolvedValue(null),
+    onRenameWorkspaceGroup: vi.fn().mockResolvedValue(null),
+    onMoveWorkspaceGroup: vi.fn().mockResolvedValue(null),
+    onDeleteWorkspaceGroup: vi.fn().mockResolvedValue(null),
+    onAssignWorkspaceGroup: vi.fn().mockResolvedValue(null),
+    onRunDoctor: vi.fn().mockResolvedValue(createDoctorResult()),
+    onUpdateWorkspaceSettings,
+    scaleShortcutTitle: "Scale shortcut",
+    scaleShortcutText: "Use Command +/-",
+    onTestNotificationSound: vi.fn(),
+    onTestSystemNotification: vi.fn(),
+    dictationModelStatus: null,
+    onDownloadDictationModel: vi.fn(),
+    onCancelDictationDownload: vi.fn(),
+    onRemoveDictationModel: vi.fn(),
+    initialSection: "projects",
+  };
+
+  render(<SettingsView {...props} />);
+  return { onUpdateWorkspaceSettings };
+};
+
 describe("SettingsView Display", () => {
   it("updates the theme selection", async () => {
     const onUpdateAppSettings = vi.fn().mockResolvedValue(undefined);
@@ -737,6 +797,53 @@ describe("SettingsView Environments", () => {
 });
 
 describe("SettingsView Codex section", () => {
+  it("updates default agent provider", async () => {
+    cleanup();
+    const onUpdateAppSettings = vi.fn().mockResolvedValue(undefined);
+    render(
+      <SettingsView
+        workspaceGroups={[]}
+        groupedWorkspaces={[]}
+        ungroupedLabel="Ungrouped"
+        onClose={vi.fn()}
+        onMoveWorkspace={vi.fn()}
+        onDeleteWorkspace={vi.fn()}
+        onCreateWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onRenameWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onMoveWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onDeleteWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onAssignWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        reduceTransparency={false}
+        onToggleTransparency={vi.fn()}
+        appSettings={baseSettings}
+        openAppIconById={{}}
+        onUpdateAppSettings={onUpdateAppSettings}
+        onRunDoctor={vi.fn().mockResolvedValue(createDoctorResult())}
+        onRunCodexUpdate={vi.fn().mockResolvedValue(createUpdateResult())}
+        onUpdateWorkspaceSettings={vi.fn().mockResolvedValue(undefined)}
+        scaleShortcutTitle="Scale shortcut"
+        scaleShortcutText="Use Command +/-"
+        onTestNotificationSound={vi.fn()}
+        onTestSystemNotification={vi.fn()}
+        dictationModelStatus={null}
+        onDownloadDictationModel={vi.fn()}
+        onCancelDictationDownload={vi.fn()}
+        onRemoveDictationModel={vi.fn()}
+        initialSection="codex"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Default agent provider"), {
+      target: { value: "copilot" },
+    });
+
+    await waitFor(() => {
+      expect(onUpdateAppSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ defaultAgentProvider: "copilot" }),
+      );
+    });
+  });
+
   it("updates review mode in codex section", async () => {
     cleanup();
     const onUpdateAppSettings = vi.fn().mockResolvedValue(undefined);
@@ -1349,6 +1456,15 @@ describe("SettingsView Codex defaults", () => {
 });
 
 describe("SettingsView Features", () => {
+  it("hides feature flag controls for unsupported providers", async () => {
+    renderFeaturesSection({
+      appSettings: { defaultAgentProvider: "copilot" },
+    });
+
+    await screen.findByText("Feature flags are unavailable for the selected provider.");
+    expect(screen.queryByLabelText("Personality")).toBeNull();
+  });
+
   it("updates personality selection", async () => {
     const onUpdateAppSettings = vi.fn().mockResolvedValue(undefined);
     renderFeaturesSection({ onUpdateAppSettings });
@@ -1449,6 +1565,23 @@ describe("SettingsView Features", () => {
     await screen.findByText(
       "Use Responses API WebSocket transport for OpenAI by default.",
     );
+  });
+});
+
+describe("SettingsView Projects", () => {
+  it("updates per-project provider override", async () => {
+    const onUpdateWorkspaceSettings = vi.fn().mockResolvedValue(undefined);
+    renderProjectsSection({ onUpdateWorkspaceSettings });
+
+    fireEvent.change(screen.getByLabelText("Agent provider for Project One"), {
+      target: { value: "copilot" },
+    });
+
+    await waitFor(() => {
+      expect(onUpdateWorkspaceSettings).toHaveBeenCalledWith("w1", {
+        agentProvider: "copilot",
+      });
+    });
   });
 });
 

@@ -11,6 +11,10 @@ type UseSettingsProjectsSectionArgs = {
   ungroupedLabel: string;
   projects: WorkspaceInfo[];
   onUpdateAppSettings: (next: AppSettings) => Promise<void>;
+  onUpdateWorkspaceSettings: (
+    workspaceId: string,
+    settings: Partial<WorkspaceInfo["settings"]>,
+  ) => Promise<void>;
   onMoveWorkspace: (id: string, direction: "up" | "down") => void;
   onDeleteWorkspace: (id: string) => void;
   onCreateWorkspaceGroup: (name: string) => Promise<WorkspaceGroup | null>;
@@ -44,6 +48,10 @@ export type SettingsProjectsSectionProps = {
     workspaceId: string,
     groupId: string | null,
   ) => Promise<boolean | null>;
+  onUpdateWorkspaceAgentProvider: (
+    workspaceId: string,
+    provider: WorkspaceInfo["settings"]["agentProvider"],
+  ) => Promise<void>;
   onMoveWorkspace: (id: string, direction: "up" | "down") => void;
   onDeleteWorkspace: (id: string) => void;
 };
@@ -55,6 +63,7 @@ export const useSettingsProjectsSection = ({
   ungroupedLabel,
   projects,
   onUpdateAppSettings,
+  onUpdateWorkspaceSettings,
   onMoveWorkspace,
   onDeleteWorkspace,
   onCreateWorkspaceGroup,
@@ -170,6 +179,20 @@ export const useSettingsProjectsSection = ({
     }
   };
 
+  const handleUpdateWorkspaceAgentProvider = async (
+    workspaceId: string,
+    provider: WorkspaceInfo["settings"]["agentProvider"],
+  ) => {
+    setGroupError(null);
+    try {
+      await onUpdateWorkspaceSettings(workspaceId, {
+        agentProvider: provider ?? null,
+      });
+    } catch (error) {
+      setGroupError(error instanceof Error ? error.message : String(error));
+    }
+  };
+
   return {
     workspaceGroups,
     groupedWorkspaces,
@@ -188,6 +211,7 @@ export const useSettingsProjectsSection = ({
     onChooseGroupCopiesFolder: handleChooseGroupCopiesFolder,
     onClearGroupCopiesFolder: handleClearGroupCopiesFolder,
     onAssignWorkspaceGroup,
+    onUpdateWorkspaceAgentProvider: handleUpdateWorkspaceAgentProvider,
     onMoveWorkspace,
     onDeleteWorkspace,
   };

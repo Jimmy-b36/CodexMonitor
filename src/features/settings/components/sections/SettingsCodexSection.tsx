@@ -233,6 +233,33 @@ export function SettingsCodexSection({
       subtitle="Configure the Codex CLI used by CodexMonitor and validate the install."
     >
       <div className="settings-field">
+        <label className="settings-field-label" htmlFor="default-agent-provider">
+          Default agent provider
+        </label>
+        <div className="settings-field-row">
+          <select
+            id="default-agent-provider"
+            className="settings-select"
+            value={appSettings.defaultAgentProvider}
+            onChange={(event) =>
+              void onUpdateAppSettings({
+                ...appSettings,
+                defaultAgentProvider: event.target.value as AppSettings["defaultAgentProvider"],
+              })
+            }
+          >
+            <option value="codex">Codex</option>
+            <option value="copilot">Copilot</option>
+          </select>
+        </div>
+        <div className="settings-help">
+          Sets the provider used when a project does not override it.
+        </div>
+      </div>
+
+      <div className="settings-divider" />
+
+      <div className="settings-field">
         <label className="settings-field-label" htmlFor="codex-path">
           Default Codex path
         </label>

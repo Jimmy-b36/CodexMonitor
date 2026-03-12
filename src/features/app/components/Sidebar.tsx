@@ -37,6 +37,7 @@ import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 import { getUsageLabels } from "../utils/usageLabels";
 import { formatRelativeTimeShort } from "../../../utils/time";
 import type { ThreadStatusById } from "../../../utils/threadStatus";
+import { resolveWorkspaceProviderCapabilities } from "@app/utils/providerCapabilities";
 
 const COLLAPSED_GROUPS_STORAGE_KEY = "codexmonitor.collapsedGroups";
 const UNGROUPED_COLLAPSE_ID = "__ungrouped__";
@@ -80,6 +81,7 @@ type SidebarProps = {
   userInputRequests?: RequestUserInputRequest[];
   accountRateLimits: RateLimitSnapshot | null;
   usageShowRemaining: boolean;
+  defaultAgentProvider: "codex" | "copilot";
   accountInfo: AccountSnapshot | null;
   onSwitchAccount: () => void;
   onCancelSwitchAccount: () => void;
@@ -141,6 +143,7 @@ export const Sidebar = memo(function Sidebar({
   userInputRequests = [],
   accountRateLimits,
   usageShowRemaining,
+  defaultAgentProvider,
   accountInfo,
   onSwitchAccount,
   onCancelSwitchAccount,
@@ -293,7 +296,15 @@ export const Sidebar = memo(function Sidebar({
       ? "API key"
       : "Sign in to Codex";
   const accountActionLabel = accountEmail ? "Switch account" : "Sign in";
-  const showAccountSwitcher = Boolean(activeWorkspaceId);
+  const activeWorkspace = useMemo(
+    () => workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? null,
+    [activeWorkspaceId, workspaces],
+  );
+  const loginSupported = resolveWorkspaceProviderCapabilities(
+    { defaultAgentProvider },
+    activeWorkspace,
+  ).login;
+  const showAccountSwitcher = Boolean(activeWorkspaceId) && loginSupported;
   const accountSwitchDisabled = accountSwitching || !activeWorkspaceId;
   const accountCancelDisabled = !accountSwitching || !activeWorkspaceId;
   const refreshDisabled = workspaces.length === 0 || workspaces.every((workspace) => !workspace.connected);

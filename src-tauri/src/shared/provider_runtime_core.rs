@@ -1,4 +1,4 @@
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -36,6 +36,101 @@ fn unsupported_capability_error(capability: &str) -> String {
     })
 }
 
+fn normalize_method_options_value(value: Value) -> Option<Vec<Value>> {
+    let entries = value.as_array()?;
+    let normalized = entries
+        .iter()
+        .filter_map(|entry| {
+            if let Some(id) = entry.as_str().map(str::trim).filter(|id| !id.is_empty()) {
+                return Some(serde_json::json!({
+                    "id": id,
+                    "label": id,
+                    "description": Value::Null,
+                    "isDefault": false
+                }));
+            }
+            let record = entry.as_object()?;
+            let id = record
+                .get("id")
+                .or_else(|| record.get("method"))
+                .or_else(|| record.get("name"))
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|id| !id.is_empty())?;
+            let label = record
+                .get("label")
+                .or_else(|| record.get("displayName"))
+                .or_else(|| record.get("display_name"))
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|label| !label.is_empty())
+                .unwrap_or(id);
+            let description = record
+                .get("description")
+                .and_then(Value::as_str)
+                .map(str::trim)
+                .filter(|description| !description.is_empty())
+                .map(Value::from)
+                .unwrap_or(Value::Null);
+            let is_default = record
+                .get("isDefault")
+                .or_else(|| record.get("is_default"))
+                .and_then(Value::as_bool)
+                .unwrap_or(false);
+            Some(serde_json::json!({
+                "id": id,
+                "label": label,
+                "description": description,
+                "isDefault": is_default
+            }))
+        })
+        .collect::<Vec<_>>();
+    Some(normalized)
+}
+
+fn normalize_model_entry_method_options(entry: &mut Map<String, Value>) {
+    let source = entry
+        .get("methodOptions")
+        .cloned()
+        .or_else(|| entry.get("method_options").cloned())
+        .or_else(|| entry.get("methods").cloned())
+        .or_else(|| entry.get("alternativeMethods").cloned())
+        .or_else(|| entry.get("alternative_methods").cloned())
+        .or_else(|| entry.get("providerMethods").cloned())
+        .or_else(|| entry.get("provider_methods").cloned());
+    let Some(source) = source else {
+        return;
+    };
+    let Some(normalized) = normalize_method_options_value(source) else {
+        return;
+    };
+    entry.insert("methodOptions".to_string(), Value::Array(normalized));
+}
+
+fn normalize_model_list_response(mut response: Value) -> Value {
+    fn normalize_items(items: &mut [Value]) {
+        for item in items.iter_mut() {
+            let Some(record) = item.as_object_mut() else {
+                continue;
+            };
+            normalize_model_entry_method_options(record);
+        }
+    }
+
+    if let Some(root) = response.as_object_mut() {
+        if let Some(result) = root.get_mut("result").and_then(Value::as_object_mut) {
+            if let Some(data) = result.get_mut("data").and_then(Value::as_array_mut) {
+                normalize_items(data);
+                return response;
+            }
+        }
+        if let Some(data) = root.get_mut("data").and_then(Value::as_array_mut) {
+            normalize_items(data);
+        }
+    }
+    response
+}
+
 pub(crate) async fn model_list_via_provider_core(
     sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
     workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
@@ -45,8 +140,12 @@ pub(crate) async fn model_list_via_provider_core(
     let provider =
         resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
     match provider {
-        crate::types::AgentProvider::Codex => codex_core::model_list_core(sessions, workspace_id).await,
-        crate::types::AgentProvider::Copilot => codex_core::model_list_core(sessions, workspace_id).await,
+        crate::types::AgentProvider::Codex => codex_core::model_list_core(sessions, workspace_id)
+            .await
+            .map(normalize_model_list_response),
+        crate::types::AgentProvider::Copilot => codex_core::model_list_core(sessions, workspace_id)
+            .await
+            .map(normalize_model_list_response),
     }
 }
 
@@ -453,7 +552,8 @@ mod tests {
         codex_login_cancel_via_provider_core, codex_login_via_provider_core,
         collaboration_mode_list_via_provider_core, compact_thread_via_provider_core,
         experimental_feature_list_via_provider_core, fork_thread_via_provider_core,
-        list_threads_via_provider_core, resolve_provider_for_workspace_core,
+        list_threads_via_provider_core, normalize_model_list_response,
+        resolve_provider_for_workspace_core,
         resume_thread_via_provider_core, send_user_message_via_provider_core,
         set_thread_name_via_provider_core, skills_list_via_provider_core,
         start_review_via_provider_core, start_thread_via_provider_core,
@@ -462,6 +562,7 @@ mod tests {
     };
     use crate::backend::app_server::WorkspaceSession;
     use crate::types::{AgentProvider, AppSettings, WorkspaceEntry, WorkspaceKind, WorkspaceSettings};
+    use serde_json::Value;
     use std::collections::HashMap;
     use std::sync::Arc;
     use tokio::runtime::Runtime;
@@ -488,6 +589,67 @@ mod tests {
             value.get("capability").and_then(|v| v.as_str()),
             Some("modelsList")
         );
+    }
+
+    #[test]
+    fn normalize_model_list_response_sets_method_options_from_snake_case_source() {
+        let response = serde_json::json!({
+            "result": {
+                "data": [
+                    {
+                        "id": "m1",
+                        "model": "gpt-5.3",
+                        "method_options": [
+                            {"name": "balanced", "is_default": true, "description": "Default"},
+                            "fast"
+                        ]
+                    }
+                ]
+            }
+        });
+        let normalized = normalize_model_list_response(response);
+        let methods = normalized
+            .get("result")
+            .and_then(|result| result.get("data"))
+            .and_then(Value::as_array)
+            .and_then(|items| items.first())
+            .and_then(|model| model.get("methodOptions"))
+            .and_then(Value::as_array)
+            .expect("normalized methodOptions");
+        assert_eq!(methods.len(), 2);
+        assert_eq!(methods[0].get("id").and_then(Value::as_str), Some("balanced"));
+        assert_eq!(
+            methods[0].get("isDefault").and_then(Value::as_bool),
+            Some(true)
+        );
+        assert_eq!(methods[1].get("id").and_then(Value::as_str), Some("fast"));
+    }
+
+    #[test]
+    fn normalize_model_list_response_sets_method_options_for_top_level_data() {
+        let response = serde_json::json!({
+            "data": [
+                {
+                    "id": "m1",
+                    "model": "gpt-5.3",
+                    "methods": [
+                        {"method": "safe", "label": "Safe mode"},
+                        {"id": "turbo", "display_name": "Turbo"}
+                    ]
+                }
+            ]
+        });
+        let normalized = normalize_model_list_response(response);
+        let methods = normalized
+            .get("data")
+            .and_then(Value::as_array)
+            .and_then(|items| items.first())
+            .and_then(|model| model.get("methodOptions"))
+            .and_then(Value::as_array)
+            .expect("normalized methodOptions");
+        assert_eq!(methods.len(), 2);
+        assert_eq!(methods[0].get("label").and_then(Value::as_str), Some("Safe mode"));
+        assert_eq!(methods[1].get("label").and_then(Value::as_str), Some("Turbo"));
     }
 
     #[test]

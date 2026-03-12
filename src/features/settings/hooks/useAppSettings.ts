@@ -27,12 +27,17 @@ const DEFAULT_REMOTE_BACKEND_HOST = "127.0.0.1:4732";
 const DEFAULT_REMOTE_BACKEND_ID = "remote-default";
 const DEFAULT_REMOTE_BACKEND_NAME = "Primary remote";
 const DEFAULT_REMOTE_PROVIDER: AppSettings["remoteBackendProvider"] = "tcp";
+const DEFAULT_AGENT_PROVIDER: AppSettings["defaultAgentProvider"] = "codex";
 
 type RemoteBackendTarget = AppSettings["remoteBackends"][number];
 
 function normalizeRemoteProvider(value: unknown): AppSettings["remoteBackendProvider"] {
   void value;
   return "tcp";
+}
+
+function normalizeAgentProvider(value: unknown): AppSettings["defaultAgentProvider"] {
+  return value === "copilot" ? "copilot" : "codex";
 }
 
 function normalizeRemoteToken(value: string | null | undefined): string | null {
@@ -136,6 +141,7 @@ function buildDefaultSettings(): AppSettings {
   return {
     codexBin: null,
     codexArgs: null,
+    defaultAgentProvider: DEFAULT_AGENT_PROVIDER,
     backendMode: isMobile ? "remote" : "local",
     remoteBackendProvider: defaultRemote.provider,
     remoteBackendHost: defaultRemote.host,
@@ -243,6 +249,7 @@ function normalizeAppSettings(settings: AppSettings): AppSettings {
     ...remoteBackendSettings,
     codexBin: settings.codexBin?.trim() ? settings.codexBin.trim() : null,
     codexArgs: settings.codexArgs?.trim() ? settings.codexArgs.trim() : null,
+    defaultAgentProvider: normalizeAgentProvider(settings.defaultAgentProvider),
     uiScale: clampUiScale(settings.uiScale),
     theme: allowedThemes.has(settings.theme) ? settings.theme : "system",
     uiFontFamily: normalizeFontFamily(

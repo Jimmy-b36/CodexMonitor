@@ -9,7 +9,9 @@ pub(crate) fn read_workspaces(path: &PathBuf) -> Result<HashMap<String, Workspac
         return Ok(HashMap::new());
     }
     let data = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-    let list: Vec<WorkspaceEntry> = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let mut value: Value = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    sanitize_workspace_agent_providers(&mut value);
+    let list: Vec<WorkspaceEntry> = serde_json::from_value(value).map_err(|e| e.to_string())?;
     Ok(list
         .into_iter()
         .map(|entry| (entry.id.clone(), entry))
@@ -30,11 +32,13 @@ pub(crate) fn read_settings(path: &PathBuf) -> Result<AppSettings, String> {
     }
     let data = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     let mut value: Value = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    sanitize_settings_agent_providers(&mut value);
     migrate_follow_up_message_behavior(&mut value);
     match serde_json::from_value(value.clone()) {
         Ok(settings) => Ok(settings),
         Err(_) => {
             sanitize_remote_settings_for_tcp_only(&mut value);
+            sanitize_settings_agent_providers(&mut value);
             migrate_follow_up_message_behavior(&mut value);
             serde_json::from_value(value).map_err(|e| e.to_string())
         }
@@ -90,6 +94,48 @@ fn migrate_follow_up_message_behavior(value: &mut Value) {
         "followUpMessageBehavior".to_string(),
         Value::String(if steer_enabled { "steer" } else { "queue" }.to_string()),
     );
+}
+
+fn sanitize_settings_agent_providers(value: &mut Value) {
+    let Value::Object(root) = value else {
+        return;
+    };
+    sanitize_agent_provider_value(root, "defaultAgentProvider", "settings");
+}
+
+fn sanitize_workspace_agent_providers(value: &mut Value) {
+    let Value::Array(workspaces) = value else {
+        return;
+    };
+    for workspace in workspaces {
+        let Value::Object(workspace_obj) = workspace else {
+            continue;
+        };
+        let Some(Value::Object(settings)) = workspace_obj.get_mut("settings") else {
+            continue;
+        };
+        sanitize_agent_provider_value(settings, "agentProvider", "workspace settings");
+    }
+}
+
+fn sanitize_agent_provider_value(
+    object: &mut serde_json::Map<String, Value>,
+    key: &str,
+    context: &str,
+) {
+    let Some(current) = object.get(key) else {
+        return;
+    };
+    let Some(value) = current.as_str().map(str::to_string) else {
+        object.insert(key.to_string(), Value::String("codex".to_string()));
+        eprintln!("Invalid {context} `{key}` (non-string); falling back to codex");
+        return;
+    };
+    if value == "codex" || value == "copilot" {
+        return;
+    }
+    object.insert(key.to_string(), Value::String("codex".to_string()));
+    eprintln!("Unknown {context} `{key}` value `{value}`; falling back to codex");
 }
 
 #[cfg(test)]
@@ -227,5 +273,57 @@ mod tests {
 
         let settings = read_settings(&path).expect("read settings");
         assert_eq!(settings.follow_up_message_behavior, "queue");
+    }
+
+    #[test]
+    fn read_settings_sanitizes_unknown_default_agent_provider() {
+        let temp_dir = std::env::temp_dir().join(format!("codex-monitor-test-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&temp_dir).expect("create temp dir");
+        let path = temp_dir.join("settings.json");
+
+        std::fs::write(
+            &path,
+            r#"{
+  "defaultAgentProvider": "legacy-provider",
+  "theme": "dark"
+}"#,
+        )
+        .expect("write settings");
+
+        let settings = read_settings(&path).expect("read settings");
+        assert!(matches!(
+            settings.default_agent_provider,
+            crate::types::AgentProvider::Codex
+        ));
+        assert_eq!(settings.theme, "dark");
+    }
+
+    #[test]
+    fn read_workspaces_sanitizes_unknown_workspace_agent_provider() {
+        let temp_dir = std::env::temp_dir().join(format!("codex-monitor-test-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&temp_dir).expect("create temp dir");
+        let path = temp_dir.join("workspaces.json");
+
+        std::fs::write(
+            &path,
+            r#"[
+  {
+    "id": "w1",
+    "name": "Workspace",
+    "path": "/tmp",
+    "settings": {
+      "agentProvider": "legacy-provider"
+    }
+  }
+]"#,
+        )
+        .expect("write workspaces");
+
+        let read = read_workspaces(&path).expect("read workspaces");
+        let stored = read.get("w1").expect("stored workspace");
+        assert!(matches!(
+            stored.settings.agent_provider,
+            Some(crate::types::AgentProvider::Codex)
+        ));
     }
 }

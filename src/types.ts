@@ -2,6 +2,7 @@ export type WorkspaceSettings = {
   sidebarCollapsed: boolean;
   sortOrder?: number | null;
   groupId?: string | null;
+  agentProvider?: AgentProvider | null;
   cloneSourceWorkspaceId?: string | null;
   gitRoot?: string | null;
   launchScript?: string | null;
@@ -194,6 +195,73 @@ export type AccessMode = "read-only" | "current" | "full-access";
 export type ServiceTier = "fast" | "flex";
 export type BackendMode = "local" | "remote";
 export type RemoteBackendProvider = "tcp";
+export type AgentProvider = "codex" | "copilot";
+
+export type ProviderCapabilities = {
+  threadStart: boolean;
+  threadResume: boolean;
+  threadList: boolean;
+  messageSend: boolean;
+  modelsList: boolean;
+  login: boolean;
+  featureFlags: boolean;
+  skillsList: boolean;
+  appsList: boolean;
+  collaborationModes: boolean;
+  reviewStart: boolean;
+  forkThread: boolean;
+  archiveThread: boolean;
+  compactThread: boolean;
+};
+
+export type ProviderDescriptor = {
+  id: AgentProvider;
+  label: string;
+  version: string;
+  capabilities: ProviderCapabilities;
+};
+
+export type ProviderConnectionState =
+  | "connected"
+  | "disconnected"
+  | "connecting"
+  | "error";
+
+export type ProviderSessionHandle = {
+  workspaceId: string;
+  providerId: AgentProvider;
+  connectionState: ProviderConnectionState;
+};
+
+export type ProviderRequestContext = {
+  workspaceId: string;
+  threadId?: string;
+  metadata: Record<string, unknown>;
+};
+
+export type ProviderErrorCode =
+  | "unsupported_capability"
+  | "provider_unavailable"
+  | "auth_required"
+  | "invalid_request"
+  | "upstream_error"
+  | "timeout";
+
+export type ProviderError = {
+  code: ProviderErrorCode;
+  message: string;
+  retryable: boolean;
+  capability?: string;
+};
+
+export type CanonicalEvent = {
+  workspaceId: string;
+  method: string;
+  params: Record<string, unknown>;
+  providerId: AgentProvider;
+  raw?: unknown;
+};
+
 export type RemoteBackendTarget = {
   id: string;
   name: string;
@@ -235,6 +303,7 @@ export type OpenAppTarget = {
 export type AppSettings = {
   codexBin: string | null;
   codexArgs: string | null;
+  defaultAgentProvider: AgentProvider;
   backendMode: BackendMode;
   remoteBackendProvider: RemoteBackendProvider;
   remoteBackendHost: string;

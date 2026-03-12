@@ -760,7 +760,14 @@ impl DaemonState {
     }
 
     async fn fork_thread(&self, workspace_id: String, thread_id: String) -> Result<Value, String> {
-        codex_core::fork_thread_core(&self.sessions, workspace_id, thread_id).await
+        shared::provider_runtime_core::fork_thread_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            thread_id,
+        )
+        .await
     }
 
     async fn list_threads(

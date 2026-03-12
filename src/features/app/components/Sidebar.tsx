@@ -37,7 +37,11 @@ import { useDebouncedValue } from "../../../hooks/useDebouncedValue";
 import { getUsageLabels } from "../utils/usageLabels";
 import { formatRelativeTimeShort } from "../../../utils/time";
 import type { ThreadStatusById } from "../../../utils/threadStatus";
-import { resolveWorkspaceProviderCapabilities } from "@app/utils/providerCapabilities";
+import {
+  resolveWorkspaceAgentProvider,
+  resolveWorkspaceProviderCapabilities,
+} from "@app/utils/providerCapabilities";
+import { getProviderDisplayName } from "@utils/providerPresentation";
 
 const COLLAPSED_GROUPS_STORAGE_KEY = "codexmonitor.collapsedGroups";
 const UNGROUPED_COLLAPSE_ID = "__ungrouped__";
@@ -289,17 +293,19 @@ export const Sidebar = memo(function Sidebar({
     [normalizedQuery],
   );
 
+  const activeWorkspace = useMemo(
+    () => workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? null,
+    [activeWorkspaceId, workspaces],
+  );
   const accountEmail = accountInfo?.email?.trim() ?? "";
   const accountButtonLabel = accountEmail
     ? accountEmail
     : accountInfo?.type === "apikey"
       ? "API key"
-      : "Sign in to Codex";
+      : `Sign in to ${getProviderDisplayName(
+          resolveWorkspaceAgentProvider({ defaultAgentProvider }, activeWorkspace),
+        )}`;
   const accountActionLabel = accountEmail ? "Switch account" : "Sign in";
-  const activeWorkspace = useMemo(
-    () => workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? null,
-    [activeWorkspaceId, workspaces],
-  );
   const loginSupported = resolveWorkspaceProviderCapabilities(
     { defaultAgentProvider },
     activeWorkspace,

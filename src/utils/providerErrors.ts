@@ -1,4 +1,5 @@
-import type { ProviderError, ProviderErrorCode } from "@/types";
+import type { AgentProvider, ProviderError, ProviderErrorCode } from "@/types";
+import { getProviderDisplayName } from "./providerPresentation";
 
 const PROVIDER_ERROR_CODES: ReadonlySet<ProviderErrorCode> = new Set([
   "unsupported_capability",
@@ -116,7 +117,10 @@ function getCapabilityLabel(capability: string | undefined): string {
   return CAPABILITY_LABELS[capability] ?? capability;
 }
 
-export function getProviderGuardrailMessage(value: unknown): string | null {
+export function getProviderGuardrailMessage(
+  value: unknown,
+  provider?: AgentProvider | null,
+): string | null {
   const providerError = parseProviderError(value);
   if (!providerError) {
     return null;
@@ -125,7 +129,10 @@ export function getProviderGuardrailMessage(value: unknown): string | null {
   switch (providerError.code) {
     case "unsupported_capability": {
       const capabilityLabel = getCapabilityLabel(providerError.capability);
-      return `${capabilityLabel} is not available for the selected provider. Switch this workspace to Codex to use it.`;
+      if (provider) {
+        return `${capabilityLabel} is not available for ${getProviderDisplayName(provider)}. Switch this workspace to a provider that supports it.`;
+      }
+      return `${capabilityLabel} is not available for the selected provider. Switch this workspace to a provider that supports it.`;
     }
     case "auth_required":
       return "Provider authentication is required. Sign in and try again.";

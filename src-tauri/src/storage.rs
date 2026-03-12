@@ -299,6 +299,29 @@ mod tests {
     }
 
     #[test]
+    fn read_settings_preserves_supported_default_agent_provider() {
+        let temp_dir = std::env::temp_dir().join(format!("codex-monitor-test-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&temp_dir).expect("create temp dir");
+        let path = temp_dir.join("settings.json");
+
+        std::fs::write(
+            &path,
+            r#"{
+  "defaultAgentProvider": "copilot",
+  "theme": "dark"
+}"#,
+        )
+        .expect("write settings");
+
+        let settings = read_settings(&path).expect("read settings");
+        assert!(matches!(
+            settings.default_agent_provider,
+            crate::types::AgentProvider::Copilot
+        ));
+        assert_eq!(settings.theme, "dark");
+    }
+
+    #[test]
     fn read_workspaces_sanitizes_unknown_workspace_agent_provider() {
         let temp_dir = std::env::temp_dir().join(format!("codex-monitor-test-{}", Uuid::new_v4()));
         std::fs::create_dir_all(&temp_dir).expect("create temp dir");
@@ -324,6 +347,35 @@ mod tests {
         assert!(matches!(
             stored.settings.agent_provider,
             Some(crate::types::AgentProvider::Codex)
+        ));
+    }
+
+    #[test]
+    fn read_workspaces_preserves_supported_workspace_agent_provider() {
+        let temp_dir = std::env::temp_dir().join(format!("codex-monitor-test-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&temp_dir).expect("create temp dir");
+        let path = temp_dir.join("workspaces.json");
+
+        std::fs::write(
+            &path,
+            r#"[
+  {
+    "id": "w1",
+    "name": "Workspace",
+    "path": "/tmp",
+    "settings": {
+      "agentProvider": "copilot"
+    }
+  }
+]"#,
+        )
+        .expect("write workspaces");
+
+        let read = read_workspaces(&path).expect("read workspaces");
+        let stored = read.get("w1").expect("stored workspace");
+        assert!(matches!(
+            stored.settings.agent_provider,
+            Some(crate::types::AgentProvider::Copilot)
         ));
     }
 }

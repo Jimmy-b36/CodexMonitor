@@ -59,6 +59,20 @@ describe("useAppSettings", () => {
     expect(result.current.settings.remoteBackendHost).toBe("example:1234");
   });
 
+  it("preserves supported default agent provider values", async () => {
+    getAppSettingsMock.mockResolvedValue(
+      ({
+        defaultAgentProvider: "copilot",
+      } as unknown) as AppSettings,
+    );
+
+    const { result } = renderHook(() => useAppSettings());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.settings.defaultAgentProvider).toBe("copilot");
+  });
+
   it("keeps defaults when getAppSettings fails", async () => {
     getAppSettingsMock.mockRejectedValue(new Error("boom"));
 

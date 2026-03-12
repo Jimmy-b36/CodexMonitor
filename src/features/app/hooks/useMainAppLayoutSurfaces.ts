@@ -1,5 +1,10 @@
 import type { RefObject } from "react";
-import type { AppSettings, ComposerEditorSettings, WorkspaceInfo } from "@/types";
+import type {
+  AgentProvider,
+  AppSettings,
+  ComposerEditorSettings,
+  WorkspaceInfo,
+} from "@/types";
 import type { ThreadState } from "@/features/threads/hooks/useThreadsReducer";
 import type { WorkspaceLaunchScriptsState } from "@app/hooks/useWorkspaceLaunchScripts";
 import { REMOTE_THREAD_POLL_INTERVAL_MS } from "@app/hooks/useRemoteThreadRefreshOnFocus";
@@ -159,6 +164,7 @@ type UseMainAppLayoutSurfacesArgs = {
   codexArgsOptions: ComposerProps["codexArgsOptions"];
   selectedCodexArgsOverride: ComposerProps["selectedCodexArgsOverride"];
   onSelectCodexArgsOverride: ComposerProps["onSelectCodexArgsOverride"];
+  activeAgentProvider: AgentProvider;
   accessMode: ComposerProps["accessMode"];
   onSelectAccessMode: ComposerProps["onSelectAccessMode"];
   skills: ComposerProps["skills"];
@@ -321,6 +327,7 @@ export function useMainAppLayoutSurfaces({
   codexArgsOptions,
   selectedCodexArgsOverride,
   onSelectCodexArgsOverride,
+  activeAgentProvider,
   accessMode,
   onSelectAccessMode,
   skills,
@@ -535,6 +542,7 @@ export function useMainAppLayoutSurfaces({
             codexArgsOptions,
             selectedCodexArgsOverride,
             onSelectCodexArgsOverride,
+            activeAgentProvider,
             accessMode,
             onSelectAccessMode,
             skills,

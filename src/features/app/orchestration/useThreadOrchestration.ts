@@ -3,12 +3,14 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { pushErrorToast } from "@/services/toasts";
 import type {
   AccessMode,
+  AgentProvider,
   AppMention,
   AppSettings,
   ComposerSendIntent,
   ServiceTier,
 } from "@/types";
 import { normalizeCodexArgsInput } from "@/utils/codexArgsInput";
+import { getProviderDisplayName } from "@/utils/providerPresentation";
 import { useThreadCodexParams } from "@threads/hooks/useThreadCodexParams";
 import { getIgnoredCodexArgsFlagsMetadata } from "@threads/utils/codexArgsProfiles";
 import {
@@ -47,6 +49,7 @@ type UseThreadSelectionHandlersOrchestrationParams = {
   setSelectedCollaborationModeId: (id: string | null) => void;
   setAccessMode: SetState<AccessMode>;
   setSelectedCodexArgsOverride?: (value: string | null) => void;
+  activeAgentProvider: AgentProvider;
   persistThreadCodexParams: PersistThreadCodexParams;
 };
 
@@ -296,6 +299,7 @@ export function useThreadSelectionHandlersOrchestration({
   setSelectedCollaborationModeId,
   setAccessMode,
   setSelectedCodexArgsOverride,
+  activeAgentProvider,
   persistThreadCodexParams,
 }: UseThreadSelectionHandlersOrchestrationParams) {
   const handleSelectModel = useCallback(
@@ -387,15 +391,16 @@ export function useThreadSelectionHandlersOrchestration({
     (value: string | null) => {
       const next = normalizeCodexArgsInput(value);
       if (next && getIgnoredCodexArgsFlagsMetadata(next).hasIgnoredFlags) {
+        const providerName = getProviderDisplayName(activeAgentProvider);
         pushErrorToast({
-          title: "Some codex args are ignored",
+          title: `Some ${providerName} args are ignored`,
           message: "Selected flags are ignored for per-thread overrides.",
         });
       }
       setSelectedCodexArgsOverride?.(next);
       persistThreadCodexParams({ codexArgsOverride: next });
     },
-    [persistThreadCodexParams, setSelectedCodexArgsOverride],
+    [activeAgentProvider, persistThreadCodexParams, setSelectedCodexArgsOverride],
   );
 
   return {

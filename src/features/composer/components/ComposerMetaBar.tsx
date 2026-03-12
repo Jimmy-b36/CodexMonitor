@@ -1,7 +1,13 @@
 import type { CSSProperties } from "react";
 import { BrainCog, SlidersHorizontal, Zap } from "lucide-react";
-import type { AccessMode, ServiceTier, ThreadTokenUsage } from "../../../types";
+import type {
+  AccessMode,
+  AgentProvider,
+  ServiceTier,
+  ThreadTokenUsage,
+} from "../../../types";
 import type { CodexArgsOption } from "../../threads/utils/codexArgsProfiles";
+import { getProviderArgsProfileLabel } from "@/utils/providerPresentation";
 
 type ComposerMetaBarProps = {
   disabled: boolean;
@@ -24,6 +30,7 @@ type ComposerMetaBarProps = {
   codexArgsOptions?: CodexArgsOption[];
   selectedCodexArgsOverride?: string | null;
   onSelectCodexArgsOverride?: (value: string | null) => void;
+  activeAgentProvider?: AgentProvider;
   contextUsage?: ThreadTokenUsage | null;
 };
 
@@ -48,6 +55,7 @@ export function ComposerMetaBar({
   codexArgsOptions = [],
   selectedCodexArgsOverride = null,
   onSelectCodexArgsOverride,
+  activeAgentProvider = "codex",
   contextUsage = null,
 }: ComposerMetaBarProps) {
   const contextWindow = contextUsage?.modelContextWindow ?? null;
@@ -249,7 +257,7 @@ export function ComposerMetaBar({
             </span>
             <select
               className="composer-select composer-select--approval"
-              aria-label="Codex args profile"
+              aria-label={getProviderArgsProfileLabel(activeAgentProvider)}
               disabled={disabled}
               value={selectedCodexArgsOverride ?? ""}
               onChange={(event) =>

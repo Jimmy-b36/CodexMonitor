@@ -9,6 +9,7 @@ import {
   type ClipboardEvent,
 } from "react";
 import type {
+  AgentProvider,
   AppMention,
   AppOption,
   ComposerSendIntent,
@@ -80,6 +81,7 @@ type ComposerProps = {
   codexArgsOptions?: CodexArgsOption[];
   selectedCodexArgsOverride?: string | null;
   onSelectCodexArgsOverride?: (value: string | null) => void;
+  activeAgentProvider?: AgentProvider;
   accessMode: "read-only" | "current" | "full-access";
   onSelectAccessMode: (mode: "read-only" | "current" | "full-access") => void;
   skills: { name: string; description?: string }[];
@@ -193,6 +195,7 @@ export const Composer = memo(function Composer({
   codexArgsOptions = [],
   selectedCodexArgsOverride = null,
   onSelectCodexArgsOverride,
+  activeAgentProvider = "codex",
   accessMode,
   onSelectAccessMode,
   skills,
@@ -882,6 +885,7 @@ export const Composer = memo(function Composer({
         codexArgsOptions={codexArgsOptions}
         selectedCodexArgsOverride={selectedCodexArgsOverride}
         onSelectCodexArgsOverride={onSelectCodexArgsOverride}
+        activeAgentProvider={activeAgentProvider}
         accessMode={accessMode}
         onSelectAccessMode={onSelectAccessMode}
         contextUsage={contextUsage}

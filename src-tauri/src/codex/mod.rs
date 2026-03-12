@@ -355,7 +355,15 @@ pub(crate) async fn set_thread_name(
         .await;
     }
 
-    codex_core::set_thread_name_core(&state.sessions, workspace_id, thread_id, name).await
+    crate::shared::provider_runtime_core::set_thread_name_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        thread_id,
+        name,
+    )
+    .await
 }
 
 #[tauri::command]

@@ -834,7 +834,15 @@ impl DaemonState {
         thread_id: String,
         name: String,
     ) -> Result<Value, String> {
-        codex_core::set_thread_name_core(&self.sessions, workspace_id, thread_id, name).await
+        shared::provider_runtime_core::set_thread_name_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            thread_id,
+            name,
+        )
+        .await
     }
 
     async fn send_user_message(

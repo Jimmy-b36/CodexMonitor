@@ -430,7 +430,7 @@ export default function MainApp() {
     (
       workspaceId: string,
       threadId: string,
-      metadata: { modelId: string | null; effort: string | null },
+      metadata: { modelId: string | null; methodId: string | null; effort: string | null },
     ) => {
       if (!workspaceId || !threadId) {
         return;
@@ -439,21 +439,29 @@ export default function MainApp() {
         typeof metadata.modelId === "string" && metadata.modelId.trim().length > 0
           ? metadata.modelId.trim()
           : null;
+      const methodId =
+        typeof metadata.methodId === "string" && metadata.methodId.trim().length > 0
+          ? metadata.methodId.trim()
+          : null;
       const effort =
         typeof metadata.effort === "string" && metadata.effort.trim().length > 0
           ? metadata.effort.trim().toLowerCase()
           : null;
-      if (!modelId && !effort) {
+      if (!modelId && !methodId && !effort) {
         return;
       }
 
       const current = getThreadCodexParams(workspaceId, threadId);
       const patch: {
         modelId?: string | null;
+        methodId?: string | null;
         effort?: string | null;
       } = {};
       if (modelId && !current?.modelId) {
         patch.modelId = modelId;
+      }
+      if (methodId && !current?.methodId) {
+        patch.methodId = methodId;
       }
       if (effort && !current?.effort) {
         patch.effort = effort;

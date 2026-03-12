@@ -53,8 +53,17 @@ const EFFORT_KEYS = [
   "model_reasoning_effort",
 ] as const;
 
+const METHOD_KEYS = [
+  "methodId",
+  "method_id",
+  "method",
+  "methodName",
+  "method_name",
+] as const;
+
 function extractFromRecord(record: Record<string, unknown>): {
   modelId: string | null;
+  methodId: string | null;
   effort: string | null;
 } {
   const payload = asRecord(record.payload);
@@ -73,32 +82,39 @@ function extractFromRecord(record: Record<string, unknown>): {
   ].filter((value): value is Record<string, unknown> => value !== null);
 
   let modelId: string | null = null;
+  let methodId: string | null = null;
   let effort: string | null = null;
 
   for (const container of containers) {
     if (!modelId) {
       modelId = pickString(container, MODEL_KEYS);
     }
+    if (!methodId) {
+      methodId = pickString(container, METHOD_KEYS);
+    }
     if (!effort) {
       effort = normalizeEffort(pickString(container, EFFORT_KEYS));
     }
-    if (modelId && effort) {
+    if (modelId && methodId && effort) {
       break;
     }
   }
 
-  return { modelId, effort };
+  return { modelId, methodId, effort };
 }
 
 function extractFromTurn(turn: Record<string, unknown>): {
   modelId: string | null;
+  methodId: string | null;
   effort: string | null;
 } {
   let modelId: string | null = null;
+  let methodId: string | null = null;
   let effort: string | null = null;
 
   const turnLevel = extractFromRecord(turn);
   modelId = turnLevel.modelId;
+  methodId = turnLevel.methodId;
   effort = turnLevel.effort;
 
   const items = Array.isArray(turn.items)
@@ -114,22 +130,27 @@ function extractFromTurn(turn: Record<string, unknown>): {
     if (!modelId && extracted.modelId) {
       modelId = extracted.modelId;
     }
+    if (!methodId && extracted.methodId) {
+      methodId = extracted.methodId;
+    }
     if (!effort && extracted.effort) {
       effort = extracted.effort;
     }
-    if (modelId && effort) {
+    if (modelId && methodId && effort) {
       break;
     }
   }
 
-  return { modelId, effort };
+  return { modelId, methodId, effort };
 }
 
 export function extractThreadCodexMetadata(thread: Record<string, unknown>): {
   modelId: string | null;
+  methodId: string | null;
   effort: string | null;
 } {
   let modelId: string | null = null;
+  let methodId: string | null = null;
   let effort: string | null = null;
 
   const turns = Array.isArray(thread.turns)
@@ -144,23 +165,29 @@ export function extractThreadCodexMetadata(thread: Record<string, unknown>): {
     if (!modelId && extracted.modelId) {
       modelId = extracted.modelId;
     }
+    if (!methodId && extracted.methodId) {
+      methodId = extracted.methodId;
+    }
     if (!effort && extracted.effort) {
       effort = extracted.effort;
     }
-    if (modelId && effort) {
+    if (modelId && methodId && effort) {
       break;
     }
   }
 
-  if (!modelId || !effort) {
+  if (!modelId || !methodId || !effort) {
     const threadLevel = extractFromRecord(thread);
     if (!modelId) {
       modelId = threadLevel.modelId;
+    }
+    if (!methodId) {
+      methodId = threadLevel.methodId;
     }
     if (!effort) {
       effort = threadLevel.effort;
     }
   }
 
-  return { modelId, effort };
+  return { modelId, methodId, effort };
 }

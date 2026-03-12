@@ -1751,7 +1751,7 @@ describe("useThreadActions", () => {
     expect(onThreadCodexMetadataDetected).toHaveBeenCalledWith(
       "ws-1",
       "thread-model-1",
-      { modelId: "gpt-5-codex", effort: "high" },
+      { modelId: "gpt-5-codex", methodId: null, effort: "high" },
     );
   });
 
@@ -1770,6 +1770,7 @@ describe("useThreadActions", () => {
                   payload: {
                     info: {
                       model: "gpt-5.3-codex",
+                      method: "balanced",
                       reasoning_effort: "medium",
                     },
                   },
@@ -1794,7 +1795,7 @@ describe("useThreadActions", () => {
     expect(onThreadCodexMetadataDetected).toHaveBeenCalledWith(
       "ws-1",
       "thread-resume-model",
-      { modelId: "gpt-5.3-codex", effort: "medium" },
+      { modelId: "gpt-5.3-codex", methodId: "balanced", effort: "medium" },
     );
   });
 

@@ -10,6 +10,7 @@ describe("extractThreadCodexMetadata", () => {
 
     expect(metadata).toEqual({
       modelId: "gpt-5-codex",
+      methodId: null,
       effort: "high",
     });
   });
@@ -37,6 +38,7 @@ describe("extractThreadCodexMetadata", () => {
               payload: {
                 info: {
                   model_name: "gpt-5.3-codex",
+                  method_id: "balanced",
                   reasoning_effort: "Medium",
                 },
               },
@@ -48,6 +50,7 @@ describe("extractThreadCodexMetadata", () => {
 
     expect(metadata).toEqual({
       modelId: "gpt-5.3-codex",
+      methodId: "balanced",
       effort: "medium",
     });
   });
@@ -60,7 +63,22 @@ describe("extractThreadCodexMetadata", () => {
 
     expect(metadata).toEqual({
       modelId: "gpt-5",
+      methodId: null,
       effort: null,
+    });
+  });
+
+  it("extracts method metadata from thread-level fields", () => {
+    const metadata = extractThreadCodexMetadata({
+      model: "gpt-5-codex",
+      method: "fast",
+      reasoning_effort: "low",
+    });
+
+    expect(metadata).toEqual({
+      modelId: "gpt-5-codex",
+      methodId: "fast",
+      effort: "low",
     });
   });
 });

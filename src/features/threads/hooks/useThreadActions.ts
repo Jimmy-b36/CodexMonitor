@@ -138,7 +138,7 @@ type UseThreadActionsOptions = {
   onThreadCodexMetadataDetected?: (
     workspaceId: string,
     threadId: string,
-    metadata: { modelId: string | null; effort: string | null },
+    metadata: { modelId: string | null; methodId: string | null; effort: string | null },
   ) => void;
 };
 
@@ -273,7 +273,7 @@ export function useThreadActions({
           | null;
         if (thread) {
           const codexMetadata = extractThreadCodexMetadata(thread);
-          if (codexMetadata.modelId || codexMetadata.effort) {
+          if (codexMetadata.modelId || codexMetadata.methodId || codexMetadata.effort) {
             onThreadCodexMetadataDetected?.(workspaceId, threadId, codexMetadata);
           }
           dispatch({ type: "ensureThread", workspaceId, threadId });
@@ -686,7 +686,7 @@ export function useThreadActions({
               return;
             }
             const codexMetadata = extractThreadCodexMetadata(thread);
-            if (codexMetadata.modelId || codexMetadata.effort) {
+            if (codexMetadata.modelId || codexMetadata.methodId || codexMetadata.effort) {
               onThreadCodexMetadataDetected?.(workspace.id, threadId, codexMetadata);
             }
             const sourceParentId = getParentThreadIdFromThread(thread);
@@ -952,7 +952,7 @@ export function useThreadActions({
             return;
           }
           const codexMetadata = extractThreadCodexMetadata(thread);
-          if (codexMetadata.modelId || codexMetadata.effort) {
+          if (codexMetadata.modelId || codexMetadata.methodId || codexMetadata.effort) {
             onThreadCodexMetadataDetected?.(workspace.id, id, codexMetadata);
           }
           const sourceParentId = getParentThreadIdFromThread(thread);

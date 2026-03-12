@@ -913,8 +913,16 @@ impl DaemonState {
         target: Value,
         delivery: Option<String>,
     ) -> Result<Value, String> {
-        codex_core::start_review_core(&self.sessions, workspace_id, thread_id, target, delivery)
-            .await
+        shared::provider_runtime_core::start_review_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            thread_id,
+            target,
+            delivery,
+        )
+        .await
     }
 
     async fn model_list(&self, workspace_id: String) -> Result<Value, String> {

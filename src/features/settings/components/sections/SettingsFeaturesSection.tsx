@@ -81,6 +81,7 @@ function featureSubtitle(feature: CodexFeature): string {
 
 export function SettingsFeaturesSection({
   appSettings,
+  featureFlagsSupported,
   hasFeatureWorkspace,
   openConfigError,
   featureError,
@@ -93,6 +94,19 @@ export function SettingsFeaturesSection({
   onToggleCodexFeature,
   onUpdateAppSettings,
 }: SettingsFeaturesSectionProps) {
+  if (!featureFlagsSupported) {
+    return (
+      <SettingsSection
+        title="Features"
+        subtitle="Manage stable and experimental Codex features."
+      >
+        <div className="settings-help">
+          Feature flags are unavailable for the selected provider.
+        </div>
+      </SettingsSection>
+    );
+  }
+
   return (
     <SettingsSection
       title="Features"

@@ -6,7 +6,7 @@ import {
   SettingsSection,
   SettingsSubsection,
 } from "@/features/design-system/components/settings/SettingsPrimitives";
-import type { WorkspaceGroup, WorkspaceInfo } from "@/types";
+import type { AgentProvider, WorkspaceGroup, WorkspaceInfo } from "@/types";
 
 type GroupedWorkspaces = Array<{
   id: string | null;
@@ -32,6 +32,10 @@ type SettingsProjectsSectionProps = {
   onChooseGroupCopiesFolder: (group: WorkspaceGroup) => Promise<void>;
   onClearGroupCopiesFolder: (group: WorkspaceGroup) => Promise<void>;
   onAssignWorkspaceGroup: (workspaceId: string, groupId: string | null) => Promise<boolean | null>;
+  onUpdateWorkspaceAgentProvider: (
+    workspaceId: string,
+    provider: WorkspaceInfo["settings"]["agentProvider"],
+  ) => Promise<void>;
   onMoveWorkspace: (id: string, direction: "up" | "down") => void;
   onDeleteWorkspace: (id: string) => void;
 };
@@ -54,6 +58,7 @@ export function SettingsProjectsSection({
   onChooseGroupCopiesFolder,
   onClearGroupCopiesFolder,
   onAssignWorkspaceGroup,
+  onUpdateWorkspaceAgentProvider,
   onMoveWorkspace,
   onDeleteWorkspace,
 }: SettingsProjectsSectionProps) {
@@ -222,7 +227,22 @@ export function SettingsProjectsSection({
                         <option key={entry.id} value={entry.id}>
                           {entry.name}
                         </option>
-                      ))}
+                        ))}
+                    </select>
+                    <select
+                      className="settings-select settings-select--compact"
+                      aria-label={`Agent provider for ${workspace.name}`}
+                      value={workspace.settings.agentProvider ?? ""}
+                      onChange={(event) => {
+                        const selected = event.target.value;
+                        const nextProvider: AgentProvider | null =
+                          selected === "codex" || selected === "copilot" ? selected : null;
+                        void onUpdateWorkspaceAgentProvider(workspace.id, nextProvider);
+                      }}
+                    >
+                      <option value="">Use default provider</option>
+                      <option value="codex">Codex</option>
+                      <option value="copilot">Copilot</option>
                     </select>
                     <button
                       type="button"

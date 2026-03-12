@@ -25,6 +25,7 @@ type UseMainAppLayoutSurfacesArgs = {
     | "openAppTargets"
     | "selectedOpenAppId"
     | "experimentalAppsEnabled"
+    | "defaultAgentProvider"
     | "followUpMessageBehavior"
     | "composerFollowUpHintEnabled"
     | "dictationEnabled"
@@ -409,6 +410,7 @@ export function useMainAppLayoutSurfaces({
         userInputRequests,
         accountRateLimits: activeRateLimits,
         usageShowRemaining: appSettings.usageShowRemaining,
+        defaultAgentProvider: appSettings.defaultAgentProvider,
         accountInfo: activeAccount,
         onSwitchAccount,
         onCancelSwitchAccount,

@@ -34,6 +34,7 @@ const baseProps = {
   activeThreadId: null,
   accountRateLimits: null,
   usageShowRemaining: false,
+  defaultAgentProvider: "codex" as const,
   accountInfo: null,
   onSwitchAccount: vi.fn(),
   onCancelSwitchAccount: vi.fn(),

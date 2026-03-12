@@ -243,7 +243,16 @@ pub(crate) async fn list_threads(
         .await;
     }
 
-    codex_core::list_threads_core(&state.sessions, workspace_id, cursor, limit, sort_key).await
+    crate::shared::provider_runtime_core::list_threads_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        cursor,
+        limit,
+        sort_key,
+    )
+    .await
 }
 
 #[tauri::command]

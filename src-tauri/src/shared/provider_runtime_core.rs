@@ -83,11 +83,31 @@ pub(crate) async fn resume_thread_via_provider_core(
     }
 }
 
+pub(crate) async fn list_threads_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    cursor: Option<String>,
+    limit: Option<u32>,
+    sort_key: Option<String>,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::list_threads_core(sessions, workspace_id, cursor, limit, sort_key).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("threadList")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        resolve_provider_for_workspace_core, resume_thread_via_provider_core,
-        start_thread_via_provider_core, unsupported_capability_error,
+        list_threads_via_provider_core, resolve_provider_for_workspace_core,
+        resume_thread_via_provider_core, start_thread_via_provider_core,
+        unsupported_capability_error,
     };
     use crate::backend::app_server::WorkspaceSession;
     use crate::types::{AgentProvider, AppSettings, WorkspaceEntry, WorkspaceKind, WorkspaceSettings};
@@ -221,6 +241,40 @@ mod tests {
             assert_eq!(
                 value.get("capability").and_then(|v| v.as_str()),
                 Some("threadResume")
+            );
+        });
+    }
+
+    #[test]
+    fn list_threads_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = list_threads_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                None,
+                Some(20),
+                Some("updatedAt".to_string()),
+            )
+            .await
+            .expect_err("copilot should be unsupported for threadList");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("code").and_then(|v| v.as_str()),
+                Some("unsupported_capability")
+            );
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("threadList")
             );
         });
     }

@@ -11,6 +11,9 @@ type ComposerMetaBarProps = {
   models: { id: string; displayName: string; model: string }[];
   selectedModelId: string | null;
   onSelectModel: (id: string) => void;
+  methodOptions?: { id: string; label: string }[];
+  selectedMethodId?: string | null;
+  onSelectMethod?: (id: string | null) => void;
   reasoningOptions: string[];
   selectedEffort: string | null;
   onSelectEffort: (effort: string) => void;
@@ -32,6 +35,9 @@ export function ComposerMetaBar({
   models,
   selectedModelId,
   onSelectModel,
+  methodOptions = [],
+  selectedMethodId = null,
+  onSelectMethod,
   reasoningOptions,
   selectedEffort,
   onSelectEffort,
@@ -190,6 +196,33 @@ export function ComposerMetaBar({
             </span>
           )}
         </div>
+        {methodOptions.length > 1 && onSelectMethod && (
+          <div className="composer-select-wrap composer-select-wrap--method">
+            <span className="composer-icon" aria-hidden>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 7h14M8 12h8M10 17h4"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+            <select
+              className="composer-select composer-select--effort"
+              aria-label="Method"
+              value={selectedMethodId ?? ""}
+              onChange={(event) => onSelectMethod(event.target.value || null)}
+              disabled={disabled}
+            >
+              {methodOptions.map((method) => (
+                <option key={method.id} value={method.id}>
+                  {method.label || method.id}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="composer-select-wrap composer-select-wrap--effort">
           <span className="composer-icon composer-icon--effort" aria-hidden>
             <BrainCog size={14} strokeWidth={1.8} />

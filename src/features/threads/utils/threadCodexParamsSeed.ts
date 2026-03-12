@@ -10,6 +10,7 @@ export const NO_THREAD_SCOPE_SUFFIX = "__no_thread__";
 
 export type PendingNewThreadSeed = {
   workspaceId: string;
+  methodId: string | null;
   serviceTier: ServiceTier | null | undefined;
   collaborationModeId: string | null;
   accessMode: AccessMode;
@@ -31,6 +32,7 @@ type ResolvedThreadCodexState = {
   scopeKey: string;
   accessMode: AccessMode;
   preferredModelId: string | null;
+  preferredMethodId: string | null;
   preferredEffort: string | null;
   preferredServiceTier: ServiceTier | null | undefined;
   preferredCollabModeId: string | null;
@@ -39,6 +41,7 @@ type ResolvedThreadCodexState = {
 
 type ThreadCodexSeedPatch = {
   modelId: string | null;
+  methodId: string | null;
   effort: string | null;
   serviceTier: ServiceTier | null | undefined;
   accessMode: AccessMode;
@@ -87,6 +90,7 @@ export function createPendingThreadSeed(options: {
   activeThreadId: string | null;
   activeWorkspaceId: string | null;
   selectedServiceTier: ServiceTier | null | undefined;
+  selectedMethodId?: string | null;
   selectedCollaborationModeId: string | null;
   accessMode: AccessMode;
   codexArgsOverride?: string | null;
@@ -95,6 +99,7 @@ export function createPendingThreadSeed(options: {
     activeThreadId,
     activeWorkspaceId,
     selectedServiceTier,
+    selectedMethodId = null,
     selectedCollaborationModeId,
     accessMode,
     codexArgsOverride = null,
@@ -104,6 +109,7 @@ export function createPendingThreadSeed(options: {
   }
   return {
     workspaceId: activeWorkspaceId,
+    methodId: selectedMethodId,
     serviceTier: selectedServiceTier,
     collaborationModeId: selectedCollaborationModeId,
     accessMode,
@@ -130,6 +136,7 @@ export function resolveThreadCodexState(
       scopeKey: `${workspaceId}:${NO_THREAD_SCOPE_SUFFIX}`,
       accessMode: stored?.accessMode ?? defaultAccessMode,
       preferredModelId: stored?.modelId ?? lastComposerModelId ?? null,
+      preferredMethodId: stored?.methodId ?? null,
       preferredEffort: stored?.effort ?? lastComposerReasoningEffort ?? null,
       preferredServiceTier: stored?.serviceTier,
       preferredCollabModeId: stored?.collaborationModeId ?? null,
@@ -144,6 +151,8 @@ export function resolveThreadCodexState(
     scopeKey: makeThreadCodexParamsKey(workspaceId, threadId),
     accessMode: stored?.accessMode ?? pendingForWorkspace?.accessMode ?? defaultAccessMode,
     preferredModelId: stored?.modelId ?? lastComposerModelId ?? null,
+    preferredMethodId:
+      stored?.methodId ?? (pendingForWorkspace ? pendingForWorkspace.methodId : null),
     preferredEffort: stored?.effort ?? lastComposerReasoningEffort ?? null,
     preferredServiceTier:
       stored?.serviceTier !== undefined
@@ -166,6 +175,7 @@ export function resolveThreadCodexState(
 export function buildThreadCodexSeedPatch(options: {
   workspaceId: string;
   selectedModelId: string | null;
+  selectedMethodId: string | null;
   resolvedEffort: string | null;
   accessMode: AccessMode;
   selectedCollaborationModeId: string | null;
@@ -175,6 +185,7 @@ export function buildThreadCodexSeedPatch(options: {
   const {
     workspaceId,
     selectedModelId,
+    selectedMethodId,
     resolvedEffort,
     accessMode,
     selectedCollaborationModeId,
@@ -187,6 +198,7 @@ export function buildThreadCodexSeedPatch(options: {
 
   return {
     modelId: selectedModelId,
+    methodId: pendingForWorkspace ? pendingForWorkspace.methodId : selectedMethodId,
     effort: resolvedEffort,
     serviceTier: pendingForWorkspace ? pendingForWorkspace.serviceTier : undefined,
     accessMode: pendingForWorkspace?.accessMode ?? accessMode,

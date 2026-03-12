@@ -12,6 +12,8 @@ type ThreadCodexOrchestration = {
   setAccessMode: Dispatch<SetStateAction<AccessMode>>;
   preferredModelId: string | null;
   setPreferredModelId: Dispatch<SetStateAction<string | null>>;
+  preferredMethodId: string | null;
+  setPreferredMethodId: Dispatch<SetStateAction<string | null>>;
   preferredEffort: string | null;
   setPreferredEffort: Dispatch<SetStateAction<string | null>>;
   preferredServiceTier: ServiceTier | null | undefined;
@@ -27,6 +29,7 @@ type ThreadCodexOrchestration = {
   patchThreadCodexParams: ReturnType<typeof useThreadCodexParams>["patchThreadCodexParams"];
   persistThreadCodexParams: (patch: {
     modelId?: string | null;
+    methodId?: string | null;
     effort?: string | null;
     serviceTier?: ServiceTier | null | undefined;
     accessMode?: AccessMode | null;
@@ -51,6 +54,7 @@ export function useThreadCodexOrchestration({
   } = useThreadCodexParams();
   const [accessMode, setAccessMode] = useState<AccessMode>("current");
   const [preferredModelId, setPreferredModelId] = useState<string | null>(null);
+  const [preferredMethodId, setPreferredMethodId] = useState<string | null>(null);
   const [preferredEffort, setPreferredEffort] = useState<string | null>(null);
   const [preferredServiceTier, setPreferredServiceTier] = useState<
     ServiceTier | null | undefined
@@ -70,6 +74,7 @@ export function useThreadCodexOrchestration({
   const persistThreadCodexParams = useCallback(
     (patch: {
       modelId?: string | null;
+      methodId?: string | null;
       effort?: string | null;
       serviceTier?: ServiceTier | null | undefined;
       accessMode?: AccessMode | null;
@@ -100,6 +105,8 @@ export function useThreadCodexOrchestration({
       setAccessMode,
       preferredModelId,
       setPreferredModelId,
+      preferredMethodId,
+      setPreferredMethodId,
       preferredEffort,
       setPreferredEffort,
       preferredServiceTier,
@@ -122,6 +129,7 @@ export function useThreadCodexOrchestration({
       preferredCollabModeId,
       preferredCodexArgsOverride,
       preferredEffort,
+      preferredMethodId,
       preferredModelId,
       preferredServiceTier,
       threadCodexSelectionKey,

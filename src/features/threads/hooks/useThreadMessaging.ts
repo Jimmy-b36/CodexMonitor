@@ -38,6 +38,7 @@ import { formatRelativeTime } from "@utils/time";
 type SendMessageOptions = {
   skipPromptExpansion?: boolean;
   model?: string | null;
+  method?: string | null;
   effort?: string | null;
   serviceTier?: ServiceTier | null | undefined;
   collaborationMode?: Record<string, unknown> | null;
@@ -51,6 +52,7 @@ type UseThreadMessagingOptions = {
   activeThreadId: string | null;
   accessMode?: "read-only" | "current" | "full-access";
   model?: string | null;
+  method?: string | null;
   effort?: string | null;
   serviceTier?: ServiceTier | null | undefined;
   collaborationMode?: Record<string, unknown> | null;
@@ -160,6 +162,7 @@ export function useThreadMessaging({
   activeThreadId,
   accessMode,
   model,
+  method,
   effort,
   serviceTier,
   collaborationMode,
@@ -214,6 +217,8 @@ export function useThreadMessaging({
       }
       const resolvedModel =
         options?.model !== undefined ? options.model : model;
+      const resolvedMethod =
+        options?.method !== undefined ? options.method : method;
       const resolvedEffort =
         options?.effort !== undefined ? options.effort : effort;
       const resolvedServiceTier =
@@ -250,6 +255,7 @@ export function useThreadMessaging({
           has_images: images.length > 0 ? "true" : "false",
           text_length: String(finalText.length),
           model: resolvedModel ?? "unknown",
+          method: resolvedMethod ?? "default",
           effort: resolvedEffort ?? "unknown",
           service_tier: resolvedServiceTier ?? "default",
           collaboration_mode: sanitizedCollaborationMode ?? "unknown",
@@ -279,6 +285,7 @@ export function useThreadMessaging({
           text: finalText,
           images,
           model: resolvedModel,
+          method: resolvedMethod,
           effort: resolvedEffort,
           serviceTier: resolvedServiceTier,
           collaborationMode: sanitizedCollaborationMode,
@@ -300,6 +307,7 @@ export function useThreadMessaging({
         const startTurn = () => {
           const payload: {
             model?: string | null;
+            method?: string | null;
             effort?: string | null;
             serviceTier?: ServiceTier | null | undefined;
             collaborationMode?: Record<string, unknown> | null;
@@ -308,6 +316,7 @@ export function useThreadMessaging({
             appMentions?: AppMention[];
           } = {
             model: resolvedModel,
+            method: resolvedMethod,
             effort: resolvedEffort,
             collaborationMode: sanitizedCollaborationMode,
             accessMode: resolvedAccessMode,
@@ -432,6 +441,7 @@ export function useThreadMessaging({
       customPrompts,
       dispatch,
       effort,
+      method,
       serviceTier,
       ensureWorkspaceRuntimeCodexArgs,
       shouldPreflightRuntimeCodexArgsForSend,

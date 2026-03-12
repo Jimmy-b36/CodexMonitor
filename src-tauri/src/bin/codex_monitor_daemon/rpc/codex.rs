@@ -159,6 +159,7 @@ pub(super) async fn try_handle(
                 Err(err) => return Some(Err(err)),
             };
             let model = parse_optional_string(params, "model");
+            let method = parse_optional_string(params, "method");
             let effort = parse_optional_string(params, "effort");
             let service_tier = parse_optional_nullable_string(params, "serviceTier");
             let access_mode = parse_optional_string(params, "accessMode");
@@ -173,6 +174,7 @@ pub(super) async fn try_handle(
                         thread_id,
                         text,
                         model,
+                        method,
                         effort,
                         service_tier,
                         access_mode,

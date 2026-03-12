@@ -41,6 +41,9 @@ type HarnessProps = {
   followUpMessageBehavior?: FollowUpMessageBehavior;
   steerAvailable?: boolean;
   selectedServiceTier?: "fast" | "flex" | null;
+  methodOptions?: { id: string; label: string }[];
+  selectedMethodId?: string | null;
+  onSelectMethod?: (id: string | null) => void;
 };
 
 function ComposerHarness({
@@ -50,6 +53,9 @@ function ComposerHarness({
   followUpMessageBehavior = "queue",
   steerAvailable = false,
   selectedServiceTier = null,
+  methodOptions = [],
+  selectedMethodId = null,
+  onSelectMethod,
 }: HarnessProps) {
   const [draftText, setDraftText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -70,6 +76,9 @@ function ComposerHarness({
       models={[]}
       selectedModelId={null}
       onSelectModel={() => {}}
+      methodOptions={methodOptions}
+      selectedMethodId={selectedMethodId}
+      onSelectMethod={onSelectMethod}
       reasoningOptions={[]}
       selectedEffort={null}
       onSelectEffort={() => {}}
@@ -125,6 +134,57 @@ describe("Composer send triggers", () => {
     render(<ComposerHarness onSend={onSend} selectedServiceTier="fast" />);
 
     expect(screen.getByLabelText("Fast mode enabled")).toBeTruthy();
+  });
+
+  it("shows method selector when multiple methods are available", () => {
+    const onSend = vi.fn();
+    render(
+      <ComposerHarness
+        onSend={onSend}
+        methodOptions={[
+          { id: "balanced", label: "Balanced" },
+          { id: "fast", label: "Fast" },
+        ]}
+        selectedMethodId="balanced"
+        onSelectMethod={() => {}}
+      />,
+    );
+
+    expect(screen.getByLabelText("Method")).toBeTruthy();
+  });
+
+  it("does not show method selector when only one method exists", () => {
+    const onSend = vi.fn();
+    render(
+      <ComposerHarness
+        onSend={onSend}
+        methodOptions={[{ id: "balanced", label: "Balanced" }]}
+        selectedMethodId="balanced"
+        onSelectMethod={() => {}}
+      />,
+    );
+
+    expect(screen.queryByLabelText("Method")).toBeNull();
+  });
+
+  it("invokes method selection callback", () => {
+    const onSend = vi.fn();
+    const onSelectMethod = vi.fn();
+    render(
+      <ComposerHarness
+        onSend={onSend}
+        methodOptions={[
+          { id: "balanced", label: "Balanced" },
+          { id: "fast", label: "Fast" },
+        ]}
+        selectedMethodId="balanced"
+        onSelectMethod={onSelectMethod}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Method"), { target: { value: "fast" } });
+
+    expect(onSelectMethod).toHaveBeenCalledWith("fast");
   });
 
   it("blurs the textarea after Enter send on mobile", () => {

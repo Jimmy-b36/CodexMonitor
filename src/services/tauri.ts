@@ -440,6 +440,7 @@ export async function sendUserMessage(
   text: string,
   options?: {
     model?: string | null;
+    method?: string | null;
     effort?: string | null;
     serviceTier?: "fast" | "flex" | null | undefined;
     accessMode?: "read-only" | "current" | "full-access";
@@ -454,6 +455,7 @@ export async function sendUserMessage(
     threadId,
     text,
     model: options?.model ?? null,
+    method: options?.method ?? null,
     effort: options?.effort ?? null,
     accessMode: options?.accessMode ?? null,
     images,

@@ -34,6 +34,7 @@ function makeSelectionParams(): SelectionParams & {
     queueSaveSettings: vi.fn(async () => undefined),
     activeThreadIdRef,
     setSelectedModelId: vi.fn(),
+    setSelectedMethodId: vi.fn(),
     setSelectedEffort: vi.fn(),
     setSelectedServiceTier: vi.fn(),
     setSelectedCollaborationModeId: vi.fn(),
@@ -68,6 +69,7 @@ function makeSyncParams(
     >,
     setAccessMode: vi.fn() as unknown as Dispatch<SetStateAction<AccessMode>>,
     setPreferredModelId: vi.fn() as unknown as Dispatch<SetStateAction<string | null>>,
+    setPreferredMethodId: vi.fn() as unknown as Dispatch<SetStateAction<string | null>>,
     setPreferredEffort: vi.fn() as unknown as Dispatch<SetStateAction<string | null>>,
     setPreferredServiceTier: vi.fn() as unknown as Dispatch<
       SetStateAction<"fast" | "flex" | null | undefined>
@@ -83,6 +85,7 @@ function makeSyncParams(
       current: null,
     } as MutableRefObject<PendingNewThreadSeed | null>,
     selectedModelId: "gpt-5",
+    selectedMethodId: "balanced",
     resolvedEffort: "high",
     selectedServiceTier: undefined,
     accessMode: "full-access",
@@ -148,6 +151,20 @@ describe("useThreadSelectionHandlersOrchestration codex args selection", () => {
     });
   });
 
+  it("persists selected method per thread", () => {
+    const params = makeSelectionParams();
+    const { result } = renderHook(() => useThreadSelectionHandlersOrchestration(params));
+
+    act(() => {
+      result.current.handleSelectMethod("balanced");
+    });
+
+    expect(params.persistThreadCodexParams).toHaveBeenCalledWith({
+      methodId: "balanced",
+    });
+    expect(params.setSelectedMethodId).toHaveBeenCalledWith("balanced");
+  });
+
   it("normalizes smart quotes/dashes before persisting selected override", () => {
     const params = makeSelectionParams();
     const { result } = renderHook(() => useThreadSelectionHandlersOrchestration(params));
@@ -183,6 +200,7 @@ describe("useThreadCodexSyncOrchestration seed behavior", () => {
       "ws-1",
       "thread-2",
       expect.objectContaining({
+        methodId: "balanced",
         codexArgsOverride: undefined,
         serviceTier: undefined,
       }),
@@ -194,6 +212,7 @@ describe("useThreadCodexSyncOrchestration seed behavior", () => {
       pendingNewThreadSeedRef: {
         current: {
           workspaceId: "ws-1",
+          methodId: "balanced",
           serviceTier: "fast",
           collaborationModeId: "plan",
           accessMode: "read-only",
@@ -212,6 +231,7 @@ describe("useThreadCodexSyncOrchestration seed behavior", () => {
       "ws-1",
       "thread-2",
       expect.objectContaining({
+        methodId: "balanced",
         codexArgsOverride: "--profile pending",
         serviceTier: "fast",
       }),
@@ -261,6 +281,7 @@ describe("useThreadCodexSyncOrchestration seed behavior", () => {
         if (threadId === "thread-2") {
           return {
             modelId: null,
+            methodId: null,
             effort: null,
             accessMode: null,
             collaborationModeId: null,
@@ -271,6 +292,7 @@ describe("useThreadCodexSyncOrchestration seed behavior", () => {
         if (threadId === "__no_thread__") {
           return {
             modelId: null,
+            methodId: null,
             effort: null,
             accessMode: null,
             collaborationModeId: null,
@@ -320,6 +342,7 @@ describe("useThreadUiOrchestration", () => {
       activeThreadId: "thread-1",
       accessMode: "current" as const,
       selectedServiceTier: null,
+      selectedMethodId: null,
       selectedCollaborationModeId: null,
       selectedCodexArgsOverride: null,
       pendingNewThreadSeedRef: {

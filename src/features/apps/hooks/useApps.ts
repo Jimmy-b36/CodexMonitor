@@ -3,6 +3,7 @@ import type { AppOption, DebugEntry, WorkspaceInfo } from "../../../types";
 import { getAppsList } from "../../../services/tauri";
 import { subscribeAppServerEvents } from "../../../services/events";
 import { getAppServerParams, isAppListUpdatedEvent } from "../../../utils/appServerEvents";
+import { parseProviderError } from "@utils/providerErrors";
 
 type UseAppsOptions = {
   activeWorkspace: WorkspaceInfo | null;
@@ -129,6 +130,7 @@ export function useApps({
         retryTimer.current = null;
       }
     } catch (error) {
+      const providerError = parseProviderError(error);
       onDebug?.({
         id: `${Date.now()}-client-apps-list-error`,
         timestamp: Date.now(),
@@ -136,6 +138,23 @@ export function useApps({
         label: "app/list error",
         payload: error instanceof Error ? error.message : String(error),
       });
+      if (providerError?.code === "unsupported_capability") {
+        appsByKey.current[targetKey] = [];
+        if (
+          workspaceIdRef.current === target.workspaceId &&
+          threadIdRef.current === target.threadId
+        ) {
+          setApps([]);
+          visibleKey.current = targetKey;
+        }
+        lastFetchedKey.current = targetKey;
+        pendingTarget.current = null;
+        if (retryTimer.current) {
+          clearTimeout(retryTimer.current);
+          retryTimer.current = null;
+        }
+        return;
+      }
       if (
         workspaceIdRef.current === target.workspaceId &&
         threadIdRef.current === target.threadId &&

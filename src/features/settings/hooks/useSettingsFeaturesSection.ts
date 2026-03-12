@@ -6,6 +6,7 @@ import {
   getExperimentalFeatureList,
   setCodexFeatureFlag,
 } from "@services/tauri";
+import { getProviderGuardrailMessage } from "@utils/providerErrors";
 
 type UseSettingsFeaturesSectionArgs = {
   appSettings: AppSettings;
@@ -211,9 +212,10 @@ export const useSettingsFeaturesSection = ({
         }
         setFeatures([]);
         setFeatureError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load Codex feature flags.",
+          getProviderGuardrailMessage(error) ??
+            (error instanceof Error
+              ? error.message
+              : "Unable to load Codex feature flags."),
         );
       } finally {
         if (active) {
@@ -271,9 +273,10 @@ export const useSettingsFeaturesSection = ({
           );
         } catch (error) {
           setFeatureError(
-            error instanceof Error
-              ? error.message
-              : `Unable to update feature "${feature.name}".`,
+            getProviderGuardrailMessage(error) ??
+              (error instanceof Error
+                ? error.message
+                : `Unable to update feature "${feature.name}".`),
           );
         } finally {
           setFeatureUpdatingKey((current) =>

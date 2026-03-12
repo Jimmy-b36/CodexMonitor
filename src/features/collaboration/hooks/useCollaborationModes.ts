@@ -5,6 +5,7 @@ import type {
   WorkspaceInfo,
 } from "../../../types";
 import { getCollaborationModes } from "../../../services/tauri";
+import { parseProviderError } from "@utils/providerErrors";
 
 type UseCollaborationModesOptions = {
   activeWorkspace: WorkspaceInfo | null;
@@ -171,6 +172,7 @@ export function useCollaborationModes({
         return selection;
       });
     } catch (error) {
+      const providerError = parseProviderError(error);
       onDebug?.({
         id: `${Date.now()}-client-collaboration-mode-list-error`,
         timestamp: Date.now(),
@@ -178,6 +180,11 @@ export function useCollaborationModes({
         label: "collaborationMode/list error",
         payload: error instanceof Error ? error.message : String(error),
       });
+      if (providerError?.code === "unsupported_capability") {
+        setModes([]);
+        setSelectedModeId(null);
+        lastFetchedWorkspaceId.current = workspaceId;
+      }
     } finally {
       inFlight.current = false;
     }

@@ -240,6 +240,38 @@ pub(crate) async fn start_review_via_provider_core(
     }
 }
 
+pub(crate) async fn turn_steer_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    thread_id: String,
+    turn_id: String,
+    text: String,
+    images: Option<Vec<String>>,
+    app_mentions: Option<Vec<Value>>,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::turn_steer_core(
+                sessions,
+                workspace_id,
+                thread_id,
+                turn_id,
+                text,
+                images,
+                app_mentions,
+            )
+            .await
+        }
+        crate::types::AgentProvider::Copilot => {
+            Err(unsupported_capability_error("messageSend"))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
@@ -248,7 +280,7 @@ mod tests {
         resolve_provider_for_workspace_core, resume_thread_via_provider_core,
         send_user_message_via_provider_core, set_thread_name_via_provider_core,
         start_review_via_provider_core, start_thread_via_provider_core,
-        unsupported_capability_error,
+        turn_steer_via_provider_core, unsupported_capability_error,
     };
     use crate::backend::app_server::WorkspaceSession;
     use crate::types::{AgentProvider, AppSettings, WorkspaceEntry, WorkspaceKind, WorkspaceSettings};
@@ -624,6 +656,42 @@ mod tests {
             assert_eq!(
                 value.get("capability").and_then(|v| v.as_str()),
                 Some("reviewStart")
+            );
+        });
+    }
+
+    #[test]
+    fn turn_steer_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = turn_steer_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                "thread-1".to_string(),
+                "turn-1".to_string(),
+                "steer".to_string(),
+                None,
+                None,
+            )
+            .await
+            .expect_err("copilot should be unsupported for messageSend");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("code").and_then(|v| v.as_str()),
+                Some("unsupported_capability")
+            );
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("messageSend")
             );
         });
     }

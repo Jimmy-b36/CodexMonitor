@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
-use crate::types::AgentProvider;
+use crate::types::{AgentProvider, AppSettings, WorkspaceSettings};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -88,4 +88,43 @@ pub(crate) struct CanonicalEvent {
     pub(crate) provider_id: AgentProvider,
     #[serde(default)]
     pub(crate) raw: Option<Value>,
+}
+
+pub(crate) fn resolve_agent_provider(
+    workspace_settings: Option<&WorkspaceSettings>,
+    app_settings: &AppSettings,
+) -> AgentProvider {
+    workspace_settings
+        .and_then(|settings| settings.agent_provider)
+        .unwrap_or(app_settings.default_agent_provider)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_agent_provider;
+    use crate::types::{AgentProvider, AppSettings, WorkspaceSettings};
+
+    #[test]
+    fn resolve_agent_provider_uses_workspace_override() {
+        let app_settings = AppSettings {
+            default_agent_provider: AgentProvider::Codex,
+            ..AppSettings::default()
+        };
+        let workspace_settings = WorkspaceSettings {
+            agent_provider: Some(AgentProvider::Copilot),
+            ..WorkspaceSettings::default()
+        };
+        let resolved = resolve_agent_provider(Some(&workspace_settings), &app_settings);
+        assert!(matches!(resolved, AgentProvider::Copilot));
+    }
+
+    #[test]
+    fn resolve_agent_provider_falls_back_to_app_default() {
+        let app_settings = AppSettings {
+            default_agent_provider: AgentProvider::Copilot,
+            ..AppSettings::default()
+        };
+        let resolved = resolve_agent_provider(None, &app_settings);
+        assert!(matches!(resolved, AgentProvider::Copilot));
+    }
 }

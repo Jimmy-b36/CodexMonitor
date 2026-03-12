@@ -464,8 +464,10 @@ pub(crate) async fn turn_steer(
         .await;
     }
 
-    codex_core::turn_steer_core(
+    crate::shared::provider_runtime_core::turn_steer_via_provider_core(
         &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
         workspace_id,
         thread_id,
         turn_id,

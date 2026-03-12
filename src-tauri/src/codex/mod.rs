@@ -412,9 +412,10 @@ pub(crate) async fn send_user_message(
         .await;
     }
 
-    codex_core::send_user_message_core(
+    crate::shared::provider_runtime_core::send_user_message_via_provider_core(
         &state.sessions,
         &state.workspaces,
+        &state.app_settings,
         workspace_id,
         thread_id,
         text,

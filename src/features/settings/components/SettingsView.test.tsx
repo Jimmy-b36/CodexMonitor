@@ -62,6 +62,7 @@ getAgentsSettingsMock.mockResolvedValue({
 const baseSettings: AppSettings = {
   codexBin: null,
   codexArgs: null,
+  defaultAgentProvider: "codex",
   backendMode: "local",
   remoteBackendProvider: "tcp",
   remoteBackendHost: "127.0.0.1:4732",

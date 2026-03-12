@@ -319,6 +319,8 @@ pub(crate) struct WorkspaceSettings {
     pub(crate) sort_order: Option<u32>,
     #[serde(default, rename = "groupId")]
     pub(crate) group_id: Option<String>,
+    #[serde(default, rename = "agentProvider")]
+    pub(crate) agent_provider: Option<AgentProvider>,
     #[serde(default, rename = "cloneSourceWorkspaceId")]
     pub(crate) clone_source_workspace_id: Option<String>,
     #[serde(default, rename = "gitRoot")]
@@ -379,6 +381,8 @@ pub(crate) struct AppSettings {
     pub(crate) codex_bin: Option<String>,
     #[serde(default, rename = "codexArgs")]
     pub(crate) codex_args: Option<String>,
+    #[serde(default = "default_agent_provider", rename = "defaultAgentProvider")]
+    pub(crate) default_agent_provider: AgentProvider,
     #[serde(default, rename = "backendMode")]
     pub(crate) backend_mode: BackendMode,
     #[serde(default, rename = "remoteBackendProvider")]
@@ -666,8 +670,25 @@ impl Default for RemoteBackendProvider {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum AgentProvider {
+    Codex,
+    Copilot,
+}
+
+impl Default for AgentProvider {
+    fn default() -> Self {
+        Self::Codex
+    }
+}
+
 fn default_access_mode() -> String {
     "current".to_string()
+}
+
+fn default_agent_provider() -> AgentProvider {
+    AgentProvider::Codex
 }
 
 fn default_review_delivery_mode() -> String {
@@ -1112,6 +1133,7 @@ impl Default for AppSettings {
         Self {
             codex_bin: None,
             codex_args: None,
+            default_agent_provider: default_agent_provider(),
             backend_mode: default_backend_mode(),
             remote_backend_provider: RemoteBackendProvider::Tcp,
             remote_backend_host: default_remote_backend_host(),
@@ -1191,7 +1213,7 @@ impl Default for AppSettings {
 #[cfg(test)]
 mod tests {
     use super::{
-        AppSettings, BackendMode, RemoteBackendProvider, WorkspaceEntry, WorkspaceGroup,
+        AgentProvider, AppSettings, BackendMode, RemoteBackendProvider, WorkspaceEntry, WorkspaceGroup,
         WorkspaceKind, WorkspaceSettings,
     };
 
@@ -1199,6 +1221,10 @@ mod tests {
     fn app_settings_defaults_from_empty_json() {
         let settings: AppSettings = serde_json::from_str("{}").expect("settings deserialize");
         assert!(settings.codex_bin.is_none());
+        assert!(matches!(
+            settings.default_agent_provider,
+            AgentProvider::Codex
+        ));
         let expected_backend_mode = if cfg!(target_os = "ios") {
             BackendMode::Remote
         } else {
@@ -1389,6 +1415,7 @@ mod tests {
         assert!(entry.worktree.is_none());
         assert!(entry.settings.sort_order.is_none());
         assert!(entry.settings.group_id.is_none());
+        assert!(entry.settings.agent_provider.is_none());
     }
 
     #[test]
@@ -1397,6 +1424,7 @@ mod tests {
         assert!(!settings.sidebar_collapsed);
         assert!(settings.sort_order.is_none());
         assert!(settings.group_id.is_none());
+        assert!(settings.agent_provider.is_none());
         assert!(settings.git_root.is_none());
     }
 }

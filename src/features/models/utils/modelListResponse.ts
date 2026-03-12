@@ -72,11 +72,75 @@ function parseReasoningEfforts(item: Record<string, unknown>): ModelOption["supp
   return [];
 }
 
+function parseMethodOptions(
+  item: Record<string, unknown>,
+): NonNullable<ModelOption["methodOptions"]> {
+  const sources = [
+    item.methodOptions,
+    item.method_options,
+    item.methods,
+    item.alternativeMethods,
+    item.alternative_methods,
+    item.providerMethods,
+    item.provider_methods,
+  ];
+  const raw = sources.find((value) => Array.isArray(value));
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .map((entry) => {
+      if (typeof entry === "string") {
+        const trimmed = entry.trim();
+        if (!trimmed) {
+          return null;
+        }
+        return {
+          id: trimmed,
+          label: trimmed,
+          description: null,
+          isDefault: false,
+          value: { id: trimmed },
+        };
+      }
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+      const record = entry as Record<string, unknown>;
+      const id = String(record.id ?? record.method ?? record.name ?? "").trim();
+      if (!id) {
+        return null;
+      }
+      const labelRaw = String(record.label ?? record.displayName ?? record.display_name ?? id).trim();
+      return {
+        id,
+        label: labelRaw || id,
+        description:
+          typeof record.description === "string" && record.description.trim().length > 0
+            ? record.description.trim()
+            : null,
+        isDefault: Boolean(record.isDefault ?? record.is_default ?? false),
+        value: record,
+      };
+    })
+    .filter(
+      (
+        option,
+      ): option is {
+        id: string;
+        label: string;
+        description: string | null;
+        isDefault: boolean;
+        value: Record<string, unknown>;
+      } => option !== null,
+    );
+}
+
 export function parseModelListResponse(response: unknown): ModelOption[] {
   const items = extractModelItems(response);
 
   return items
-    .map((item) => {
+    .map((item): ModelOption | null => {
       if (!item || typeof item !== "object") {
         return null;
       }
@@ -94,7 +158,8 @@ export function parseModelListResponse(response: unknown): ModelOption[] {
           record.defaultReasoningEffort ?? record.default_reasoning_effort,
         ),
         isDefault: Boolean(record.isDefault ?? record.is_default ?? false),
-      } satisfies ModelOption;
+        methodOptions: parseMethodOptions(record),
+      };
     })
     .filter((model): model is ModelOption => model !== null);
 }

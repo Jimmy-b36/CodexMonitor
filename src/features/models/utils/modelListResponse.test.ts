@@ -57,4 +57,58 @@ describe("parseModelListResponse", () => {
     expect(models[0].displayName).toBe("GPT-5.3-Codex-Spark");
     expect(models[1].displayName).toBe("gpt-5.2-codex");
   });
+
+  it("parses method options from camelCase fields", () => {
+    const response = {
+      result: {
+        data: [
+          {
+            id: "m1",
+            model: "gpt-5.3",
+            methodOptions: [
+              {
+                id: "balanced",
+                label: "Balanced",
+                description: "Default profile",
+                isDefault: true,
+              },
+              {
+                id: "fast",
+                label: "Fast",
+                description: "Lower latency",
+                isDefault: false,
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const [model] = parseModelListResponse(response);
+    expect(model.methodOptions?.map((method) => method.id)).toEqual([
+      "balanced",
+      "fast",
+    ]);
+    expect(model.methodOptions?.[0].isDefault).toBe(true);
+    expect(model.methodOptions?.[0].description).toBe("Default profile");
+  });
+
+  it("parses method options from snake_case and string entries", () => {
+    const response = {
+      result: {
+        data: [
+          {
+            id: "m1",
+            model: "gpt-5.3",
+            method_options: ["fast", { name: "thorough", is_default: true }],
+          },
+        ],
+      },
+    };
+    const [model] = parseModelListResponse(response);
+    expect(model.methodOptions?.map((method) => method.id)).toEqual([
+      "fast",
+      "thorough",
+    ]);
+    expect(model.methodOptions?.[1].isDefault).toBe(true);
+  });
 });

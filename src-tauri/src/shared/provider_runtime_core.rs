@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::backend::app_server::WorkspaceSession;
-use crate::shared::codex_core;
+use crate::shared::codex_core::{self, CodexLoginCancelState};
 use crate::shared::provider_acp::{ProviderError, ProviderErrorCode};
 use crate::types::{AppSettings, WorkspaceEntry, WorkspaceSettings};
 
@@ -272,15 +272,175 @@ pub(crate) async fn turn_steer_via_provider_core(
     }
 }
 
+pub(crate) async fn collaboration_mode_list_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::collaboration_mode_list_core(sessions, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => {
+            Err(unsupported_capability_error("collaborationModes"))
+        }
+    }
+}
+
+pub(crate) async fn turn_interrupt_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    thread_id: String,
+    turn_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::turn_interrupt_core(sessions, workspace_id, thread_id, turn_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("messageSend")),
+    }
+}
+
+pub(crate) async fn experimental_feature_list_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    cursor: Option<String>,
+    limit: Option<u32>,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::experimental_feature_list_core(sessions, workspace_id, cursor, limit).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("featureFlags")),
+    }
+}
+
+pub(crate) async fn account_rate_limits_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::account_rate_limits_core(sessions, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("login")),
+    }
+}
+
+pub(crate) async fn account_read_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::account_read_core(sessions, workspaces, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("login")),
+    }
+}
+
+pub(crate) async fn codex_login_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    codex_login_cancels: &Mutex<HashMap<String, CodexLoginCancelState>>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::codex_login_core(sessions, codex_login_cancels, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("login")),
+    }
+}
+
+pub(crate) async fn codex_login_cancel_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    codex_login_cancels: &Mutex<HashMap<String, CodexLoginCancelState>>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::codex_login_cancel_core(sessions, codex_login_cancels, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("login")),
+    }
+}
+
+pub(crate) async fn skills_list_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::skills_list_core(sessions, workspaces, workspace_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("skillsList")),
+    }
+}
+
+pub(crate) async fn apps_list_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    cursor: Option<String>,
+    limit: Option<u32>,
+    thread_id: Option<String>,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::apps_list_core(sessions, workspace_id, cursor, limit, thread_id).await
+        }
+        crate::types::AgentProvider::Copilot => Err(unsupported_capability_error("appsList")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        archive_thread_via_provider_core, compact_thread_via_provider_core,
-        fork_thread_via_provider_core, list_threads_via_provider_core,
-        resolve_provider_for_workspace_core, resume_thread_via_provider_core,
-        send_user_message_via_provider_core, set_thread_name_via_provider_core,
+        account_rate_limits_via_provider_core, account_read_via_provider_core,
+        apps_list_via_provider_core, archive_thread_via_provider_core,
+        codex_login_cancel_via_provider_core, codex_login_via_provider_core,
+        collaboration_mode_list_via_provider_core, compact_thread_via_provider_core,
+        experimental_feature_list_via_provider_core, fork_thread_via_provider_core,
+        list_threads_via_provider_core, resolve_provider_for_workspace_core,
+        resume_thread_via_provider_core, send_user_message_via_provider_core,
+        set_thread_name_via_provider_core, skills_list_via_provider_core,
         start_review_via_provider_core, start_thread_via_provider_core,
-        turn_steer_via_provider_core, unsupported_capability_error,
+        turn_interrupt_via_provider_core, turn_steer_via_provider_core,
+        unsupported_capability_error,
     };
     use crate::backend::app_server::WorkspaceSession;
     use crate::types::{AgentProvider, AppSettings, WorkspaceEntry, WorkspaceKind, WorkspaceSettings};
@@ -692,6 +852,260 @@ mod tests {
             assert_eq!(
                 value.get("capability").and_then(|v| v.as_str()),
                 Some("messageSend")
+            );
+        });
+    }
+
+    #[test]
+    fn collaboration_mode_list_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = collaboration_mode_list_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for collaborationModes");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("collaborationModes")
+            );
+        });
+    }
+
+    #[test]
+    fn turn_interrupt_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = turn_interrupt_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                "thread-1".to_string(),
+                "turn-1".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for messageSend");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("messageSend")
+            );
+        });
+    }
+
+    #[test]
+    fn experimental_feature_list_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = experimental_feature_list_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                None,
+                Some(20),
+            )
+            .await
+            .expect_err("copilot should be unsupported for featureFlags");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("featureFlags")
+            );
+        });
+    }
+
+    #[test]
+    fn account_rate_limits_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = account_rate_limits_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for login");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("login")
+            );
+        });
+    }
+
+    #[test]
+    fn account_read_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = account_read_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for login");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("login")
+            );
+        });
+    }
+
+    #[test]
+    fn codex_login_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+            let codex_login_cancels = Mutex::new(HashMap::new());
+
+            let err = codex_login_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                &codex_login_cancels,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for login");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("login")
+            );
+        });
+    }
+
+    #[test]
+    fn codex_login_cancel_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+            let codex_login_cancels = Mutex::new(HashMap::new());
+
+            let err = codex_login_cancel_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                &codex_login_cancels,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for login");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("login")
+            );
+        });
+    }
+
+    #[test]
+    fn skills_list_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = skills_list_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for skillsList");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("skillsList")
+            );
+        });
+    }
+
+    #[test]
+    fn apps_list_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = apps_list_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                None,
+                Some(20),
+                Some("thread-1".to_string()),
+            )
+            .await
+            .expect_err("copilot should be unsupported for appsList");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("appsList")
             );
         });
     }

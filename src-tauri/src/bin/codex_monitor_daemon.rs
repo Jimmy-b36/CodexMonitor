@@ -905,7 +905,15 @@ impl DaemonState {
         thread_id: String,
         turn_id: String,
     ) -> Result<Value, String> {
-        codex_core::turn_interrupt_core(&self.sessions, workspace_id, thread_id, turn_id).await
+        shared::provider_runtime_core::turn_interrupt_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            thread_id,
+            turn_id,
+        )
+        .await
     }
 
     async fn start_review(
@@ -943,33 +951,77 @@ impl DaemonState {
         cursor: Option<String>,
         limit: Option<u32>,
     ) -> Result<Value, String> {
-        codex_core::experimental_feature_list_core(&self.sessions, workspace_id, cursor, limit)
-            .await
+        shared::provider_runtime_core::experimental_feature_list_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            cursor,
+            limit,
+        )
+        .await
     }
 
     async fn collaboration_mode_list(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::collaboration_mode_list_core(&self.sessions, workspace_id).await
+        shared::provider_runtime_core::collaboration_mode_list_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+        )
+        .await
     }
 
     async fn account_rate_limits(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::account_rate_limits_core(&self.sessions, workspace_id).await
+        shared::provider_runtime_core::account_rate_limits_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+        )
+        .await
     }
 
     async fn account_read(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::account_read_core(&self.sessions, &self.workspaces, workspace_id).await
+        shared::provider_runtime_core::account_read_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+        )
+        .await
     }
 
     async fn codex_login(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::codex_login_core(&self.sessions, &self.codex_login_cancels, workspace_id).await
+        shared::provider_runtime_core::codex_login_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            &self.codex_login_cancels,
+            workspace_id,
+        )
+        .await
     }
 
     async fn codex_login_cancel(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::codex_login_cancel_core(&self.sessions, &self.codex_login_cancels, workspace_id)
-            .await
+        shared::provider_runtime_core::codex_login_cancel_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            &self.codex_login_cancels,
+            workspace_id,
+        )
+        .await
     }
 
     async fn skills_list(&self, workspace_id: String) -> Result<Value, String> {
-        codex_core::skills_list_core(&self.sessions, &self.workspaces, workspace_id).await
+        shared::provider_runtime_core::skills_list_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+        )
+        .await
     }
 
     async fn apps_list(
@@ -979,7 +1031,16 @@ impl DaemonState {
         limit: Option<u32>,
         thread_id: Option<String>,
     ) -> Result<Value, String> {
-        codex_core::apps_list_core(&self.sessions, workspace_id, cursor, limit, thread_id).await
+        shared::provider_runtime_core::apps_list_via_provider_core(
+            &self.sessions,
+            &self.workspaces,
+            &self.app_settings,
+            workspace_id,
+            cursor,
+            limit,
+            thread_id,
+        )
+        .await
     }
 
     async fn respond_to_server_request(

@@ -300,7 +300,14 @@ pub(crate) async fn archive_thread(
         .await;
     }
 
-    codex_core::archive_thread_core(&state.sessions, workspace_id, thread_id).await
+    crate::shared::provider_runtime_core::archive_thread_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        thread_id,
+    )
+    .await
 }
 
 #[tauri::command]

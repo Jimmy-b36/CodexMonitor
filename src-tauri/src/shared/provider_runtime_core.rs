@@ -119,12 +119,32 @@ pub(crate) async fn fork_thread_via_provider_core(
     }
 }
 
+pub(crate) async fn archive_thread_via_provider_core(
+    sessions: &Mutex<HashMap<String, Arc<WorkspaceSession>>>,
+    workspaces: &Mutex<HashMap<String, WorkspaceEntry>>,
+    app_settings: &Mutex<AppSettings>,
+    workspace_id: String,
+    thread_id: String,
+) -> Result<Value, String> {
+    let provider =
+        resolve_provider_for_workspace_core(&workspace_id, workspaces, app_settings).await;
+    match provider {
+        crate::types::AgentProvider::Codex => {
+            codex_core::archive_thread_core(sessions, workspace_id, thread_id).await
+        }
+        crate::types::AgentProvider::Copilot => {
+            Err(unsupported_capability_error("archiveThread"))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        fork_thread_via_provider_core, list_threads_via_provider_core,
-        resolve_provider_for_workspace_core, resume_thread_via_provider_core,
-        start_thread_via_provider_core, unsupported_capability_error,
+        archive_thread_via_provider_core, fork_thread_via_provider_core,
+        list_threads_via_provider_core, resolve_provider_for_workspace_core,
+        resume_thread_via_provider_core, start_thread_via_provider_core,
+        unsupported_capability_error,
     };
     use crate::backend::app_server::WorkspaceSession;
     use crate::types::{AgentProvider, AppSettings, WorkspaceEntry, WorkspaceKind, WorkspaceSettings};
@@ -324,6 +344,38 @@ mod tests {
             assert_eq!(
                 value.get("capability").and_then(|v| v.as_str()),
                 Some("forkThread")
+            );
+        });
+    }
+
+    #[test]
+    fn archive_thread_returns_unsupported_for_copilot_provider() {
+        let rt = Runtime::new().expect("runtime");
+        rt.block_on(async {
+            let sessions = Mutex::new(HashMap::<String, Arc<WorkspaceSession>>::new());
+            let workspaces = Mutex::new(HashMap::new());
+            let app_settings = Mutex::new(AppSettings {
+                default_agent_provider: AgentProvider::Copilot,
+                ..AppSettings::default()
+            });
+
+            let err = archive_thread_via_provider_core(
+                &sessions,
+                &workspaces,
+                &app_settings,
+                "w-missing".to_string(),
+                "thread-1".to_string(),
+            )
+            .await
+            .expect_err("copilot should be unsupported for archiveThread");
+            let value: serde_json::Value = serde_json::from_str(&err).expect("valid json error");
+            assert_eq!(
+                value.get("code").and_then(|v| v.as_str()),
+                Some("unsupported_capability")
+            );
+            assert_eq!(
+                value.get("capability").and_then(|v| v.as_str()),
+                Some("archiveThread")
             );
         });
     }

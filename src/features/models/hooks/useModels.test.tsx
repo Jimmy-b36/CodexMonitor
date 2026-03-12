@@ -122,4 +122,69 @@ describe("useModels", () => {
       expect(result.current.selectedEffort).toBe("high");
     });
   });
+
+  it("selects default method option from provider model metadata", async () => {
+    vi.mocked(getModelList).mockResolvedValueOnce({
+      result: {
+        data: [
+          {
+            id: "remote-1",
+            model: "gpt-5.1",
+            displayName: "GPT-5.1",
+            supportedReasoningEfforts: [],
+            defaultReasoningEffort: null,
+            isDefault: true,
+            methodOptions: [
+              { id: "balanced", label: "Balanced", isDefault: true },
+              { id: "fast", label: "Fast", isDefault: false },
+            ],
+          },
+        ],
+      },
+    });
+    vi.mocked(getConfigModel).mockResolvedValueOnce(null);
+
+    const { result } = renderHook(() =>
+      useModels({ activeWorkspace: workspace }),
+    );
+
+    await waitFor(() => expect(result.current.selectedModelId).toBe("remote-1"));
+    expect(result.current.methodOptions.map((method) => method.id)).toEqual([
+      "balanced",
+      "fast",
+    ]);
+    expect(result.current.selectedMethodId).toBe("balanced");
+  });
+
+  it("prefers preferredMethodId when available", async () => {
+    vi.mocked(getModelList).mockResolvedValueOnce({
+      result: {
+        data: [
+          {
+            id: "remote-1",
+            model: "gpt-5.1",
+            displayName: "GPT-5.1",
+            supportedReasoningEfforts: [],
+            defaultReasoningEffort: null,
+            isDefault: true,
+            methodOptions: [
+              { id: "balanced", label: "Balanced", isDefault: true },
+              { id: "fast", label: "Fast", isDefault: false },
+            ],
+          },
+        ],
+      },
+    });
+    vi.mocked(getConfigModel).mockResolvedValueOnce(null);
+
+    const { result } = renderHook(() =>
+      useModels({
+        activeWorkspace: workspace,
+        preferredMethodId: "fast",
+      }),
+    );
+
+    await waitFor(() => expect(result.current.selectedModelId).toBe("remote-1"));
+    expect(result.current.selectedMethodId).toBe("fast");
+  });
 });

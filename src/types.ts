@@ -694,6 +694,13 @@ export type ModelOption = {
   supportedReasoningEfforts: { reasoningEffort: string; description: string }[];
   defaultReasoningEffort: string | null;
   isDefault: boolean;
+  methodOptions?: {
+    id: string;
+    label: string;
+    description: string | null;
+    isDefault: boolean;
+    value: Record<string, unknown>;
+  }[];
 };
 
 export type CollaborationModeOption = {

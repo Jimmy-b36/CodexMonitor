@@ -11,6 +11,7 @@ type UseModelsOptions = {
   onDebug?: (entry: DebugEntry) => void;
   preferredModelId?: string | null;
   preferredEffort?: string | null;
+  preferredMethodId?: string | null;
   selectionKey?: string | null;
 };
 
@@ -41,16 +42,19 @@ export function useModels({
   onDebug,
   preferredModelId = null,
   preferredEffort = null,
+  preferredMethodId = null,
   selectionKey = null,
 }: UseModelsOptions) {
   const [models, setModels] = useState<ModelOption[]>([]);
   const [configModel, setConfigModel] = useState<string | null>(null);
   const [selectedModelId, setSelectedModelIdState] = useState<string | null>(null);
   const [selectedEffort, setSelectedEffortState] = useState<string | null>(null);
+  const [selectedMethodId, setSelectedMethodIdState] = useState<string | null>(null);
   const lastFetchedWorkspaceId = useRef<string | null>(null);
   const inFlight = useRef(false);
   const hasUserSelectedModel = useRef(false);
   const hasUserSelectedEffort = useRef(false);
+  const hasUserSelectedMethod = useRef(false);
   const lastWorkspaceId = useRef<string | null>(null);
   const lastSelectionKey = useRef<string | null>(null);
 
@@ -64,6 +68,7 @@ export function useModels({
     lastSelectionKey.current = selectionKey;
     hasUserSelectedModel.current = false;
     hasUserSelectedEffort.current = false;
+    hasUserSelectedMethod.current = false;
   }, [selectionKey]);
 
   useEffect(() => {
@@ -72,6 +77,7 @@ export function useModels({
     }
     hasUserSelectedModel.current = false;
     hasUserSelectedEffort.current = false;
+    hasUserSelectedMethod.current = false;
     lastWorkspaceId.current = workspaceId;
     setConfigModel(null);
   }, [workspaceId]);
@@ -97,9 +103,19 @@ export function useModels({
     setSelectedEffortState(next);
   }, []);
 
+  const setSelectedMethodId = useCallback((next: string | null) => {
+    hasUserSelectedMethod.current = true;
+    setSelectedMethodIdState(next);
+  }, []);
+
   const selectedModel = useMemo(
     () => models.find((model) => model.id === selectedModelId) ?? null,
     [models, selectedModelId],
+  );
+
+  const methodOptions = useMemo(
+    () => selectedModel?.methodOptions ?? [],
+    [selectedModel],
   );
 
   const reasoningSupported = useMemo(() => {
@@ -221,6 +237,7 @@ export function useModels({
           supportedReasoningEfforts: [],
           defaultReasoningEffort: null,
           isDefault: false,
+          methodOptions: [],
         };
         return [configOption, ...dataFromServer];
       })();
@@ -250,6 +267,29 @@ export function useModels({
         if (nextEffort !== selectedEffort) {
           setSelectedEffortState(nextEffort);
         }
+        const availableMethods = nextSelection.methodOptions ?? [];
+        const existingMethod = availableMethods.find(
+          (method) => method.id === selectedMethodId,
+        );
+        if (selectedMethodId && !existingMethod) {
+          hasUserSelectedMethod.current = false;
+        }
+        const preferredMethod =
+          availableMethods.find((method) => method.id === preferredMethodId) ?? null;
+        const defaultMethod =
+          availableMethods.find((method) => method.isDefault) ??
+          availableMethods[0] ??
+          null;
+        const shouldKeepMethodSelection =
+          hasUserSelectedMethod.current && existingMethod !== undefined;
+        const nextMethod =
+          (shouldKeepMethodSelection ? existingMethod : null) ??
+          preferredMethod ??
+          defaultMethod;
+        const nextMethodId = nextMethod?.id ?? null;
+        if (nextMethodId !== selectedMethodId) {
+          setSelectedMethodIdState(nextMethodId);
+        }
       }
     } finally {
       inFlight.current = false;
@@ -257,8 +297,10 @@ export function useModels({
   }, [
     isConnected,
     onDebug,
+    preferredMethodId,
     preferredModelId,
     selectedEffort,
+    selectedMethodId,
     selectedModelId,
     resolveEffort,
     workspaceId,
@@ -317,11 +359,36 @@ export function useModels({
     if (nextEffort !== selectedEffort) {
       setSelectedEffortState(nextEffort);
     }
+    const availableMethods = nextSelection.methodOptions ?? [];
+    const existingMethod = availableMethods.find(
+      (method) => method.id === selectedMethodId,
+    );
+    if (selectedMethodId && !existingMethod) {
+      hasUserSelectedMethod.current = false;
+    }
+    const preferredMethod =
+      availableMethods.find((method) => method.id === preferredMethodId) ?? null;
+    const defaultMethod =
+      availableMethods.find((method) => method.isDefault) ??
+      availableMethods[0] ??
+      null;
+    const shouldKeepMethodSelection =
+      hasUserSelectedMethod.current && existingMethod !== undefined;
+    const nextMethod =
+      (shouldKeepMethodSelection ? existingMethod : null) ??
+      preferredMethod ??
+      defaultMethod;
+    const nextMethodId = nextMethod?.id ?? null;
+    if (nextMethodId !== selectedMethodId) {
+      setSelectedMethodIdState(nextMethodId);
+    }
   }, [
     configModel,
     models,
+    preferredMethodId,
     preferredModelId,
     selectedEffort,
+    selectedMethodId,
     selectedModelId,
     resolveEffort,
   ]);
@@ -335,6 +402,9 @@ export function useModels({
     reasoningOptions,
     selectedEffort,
     setSelectedEffort,
+    methodOptions,
+    selectedMethodId,
+    setSelectedMethodId,
     refreshModels,
   };
 }

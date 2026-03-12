@@ -327,7 +327,14 @@ pub(crate) async fn compact_thread(
         .await;
     }
 
-    codex_core::compact_thread_core(&state.sessions, workspace_id, thread_id).await
+    crate::shared::provider_runtime_core::compact_thread_via_provider_core(
+        &state.sessions,
+        &state.workspaces,
+        &state.app_settings,
+        workspace_id,
+        thread_id,
+    )
+    .await
 }
 
 #[tauri::command]

@@ -49,9 +49,9 @@ describe("providerErrors", () => {
       message: "Provider does not support capability `compactThread`",
       retryable: false,
       capability: "compactThread",
-    });
+    }, "copilot");
     expect(message).toContain("Compacting threads is not available");
-    expect(message).toContain("Switch this workspace to Codex");
+    expect(message).toContain("is not available for Copilot");
   });
 
   it("builds guardrail message for auth-required errors", () => {

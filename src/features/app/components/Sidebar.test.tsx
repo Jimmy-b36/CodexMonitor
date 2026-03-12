@@ -561,4 +561,77 @@ describe("Sidebar", () => {
     const indicator = screen.queryByTitle("Streaming updates in progress");
     expect(indicator).toBeNull();
   });
+
+  it("shows Codex in the sign-in account label for codex provider", () => {
+    render(
+      <Sidebar
+        {...baseProps}
+        activeWorkspaceId="ws-1"
+        defaultAgentProvider="codex"
+        workspaces={[
+          {
+            id: "ws-1",
+            name: "Workspace",
+            path: "/tmp/workspace",
+            connected: true,
+            settings: { sidebarCollapsed: false },
+          },
+        ]}
+        groupedWorkspaces={[
+          {
+            id: null,
+            name: "Workspaces",
+            workspaces: [
+              {
+                id: "ws-1",
+                name: "Workspace",
+                path: "/tmp/workspace",
+                connected: true,
+                settings: { sidebarCollapsed: false },
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Account" }));
+    expect(screen.getByText("Sign in to Codex")).toBeTruthy();
+  });
+
+  it("hides the account switcher when login is unsupported for copilot provider", () => {
+    render(
+      <Sidebar
+        {...baseProps}
+        activeWorkspaceId="ws-1"
+        defaultAgentProvider="copilot"
+        workspaces={[
+          {
+            id: "ws-1",
+            name: "Workspace",
+            path: "/tmp/workspace",
+            connected: true,
+            settings: { sidebarCollapsed: false },
+          },
+        ]}
+        groupedWorkspaces={[
+          {
+            id: null,
+            name: "Workspaces",
+            workspaces: [
+              {
+                id: "ws-1",
+                name: "Workspace",
+                path: "/tmp/workspace",
+                connected: true,
+                settings: { sidebarCollapsed: false },
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Account" })).toBeNull();
+  });
 });

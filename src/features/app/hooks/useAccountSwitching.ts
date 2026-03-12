@@ -4,6 +4,7 @@ import { subscribeAppServerEvents } from "../../../services/events";
 import type { AccountSnapshot } from "../../../types";
 import { getAppServerParams, getAppServerRawMethod } from "../../../utils/appServerEvents";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { getProviderGuardrailMessage } from "@utils/providerErrors";
 
 type UseAccountSwitchingArgs = {
   activeWorkspaceId: string | null;
@@ -118,7 +119,7 @@ export function useAccountSwitching({
           void refreshAccountInfoRef.current(matchWorkspaceId);
           void refreshAccountRateLimitsRef.current(matchWorkspaceId);
         } else if (!accountSwitchCanceledRef.current && errorMessage) {
-          alertErrorRef.current(errorMessage);
+          alertErrorRef.current(getProviderGuardrailMessage(errorMessage) ?? errorMessage);
         }
 
         setAccountSwitching(false);
@@ -178,7 +179,7 @@ export function useAccountSwitching({
         loginWorkspaceIdRef.current = null;
         return;
       }
-      alertError(error);
+      alertError(getProviderGuardrailMessage(error) ?? error);
       if (loginIdRef.current) {
         try {
           await cancelCodexLogin(workspaceId);
@@ -209,7 +210,7 @@ export function useAccountSwitching({
     try {
       await cancelCodexLogin(targetWorkspaceId);
     } catch (error) {
-      alertError(error);
+      alertError(getProviderGuardrailMessage(error) ?? error);
     } finally {
       setAccountSwitching(false);
       loginIdRef.current = null;

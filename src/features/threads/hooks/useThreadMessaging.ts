@@ -30,6 +30,7 @@ import {
   parseReviewTarget,
 } from "@threads/utils/threadNormalize";
 import { clampThreadName } from "@threads/utils/threadNaming";
+import { getProviderGuardrailMessage } from "@utils/providerErrors";
 import type { ThreadAction, ThreadState } from "./useThreadsReducer";
 import { useReviewPrompt } from "./useReviewPrompt";
 import { formatRelativeTime } from "@utils/time";
@@ -129,6 +130,10 @@ function isStaleSteerTurnError(message: string): boolean {
     return true;
   }
   return normalized.includes("active turn") && normalized.includes("not found");
+}
+
+function withProviderGuardrail(value: unknown, fallback: string): string {
+  return getProviderGuardrailMessage(value) ?? fallback;
 }
 
 type FastCommandAction = "toggle" | "on" | "off" | "status" | "invalid";
@@ -351,10 +356,14 @@ export function useThreadMessaging({
           payload: response,
         });
         if (rpcError) {
+          const providerMessage = getProviderGuardrailMessage(response);
           if (requestMode !== "steer") {
             markProcessing(threadId, false);
             setActiveTurnId(threadId, null);
-            pushThreadErrorMessage(threadId, `Turn failed to start: ${rpcError}`);
+            pushThreadErrorMessage(
+              threadId,
+              providerMessage ?? `Turn failed to start: ${rpcError}`,
+            );
             safeMessageActivity();
             return { status: "blocked" };
           }
@@ -364,7 +373,7 @@ export function useThreadMessaging({
           }
           pushThreadErrorMessage(
             threadId,
-            `Turn steer failed: ${rpcError}`,
+            providerMessage ?? `Turn steer failed: ${rpcError}`,
           );
           safeMessageActivity();
           return { status: "steer_failed" };
@@ -410,8 +419,8 @@ export function useThreadMessaging({
         pushThreadErrorMessage(
           threadId,
           requestMode === "steer"
-            ? `Turn steer failed: ${errorMessage}`
-            : errorMessage,
+            ? withProviderGuardrail(error, `Turn steer failed: ${errorMessage}`)
+            : withProviderGuardrail(error, errorMessage),
         );
         safeMessageActivity();
         return { status: requestMode === "steer" ? "steer_failed" : "blocked" };
@@ -617,7 +626,10 @@ export function useThreadMessaging({
             markReviewing(threadId, false);
             setActiveTurnId(threadId, null);
           }
-          pushThreadErrorMessage(threadId, `Review failed to start: ${rpcError}`);
+          pushThreadErrorMessage(
+            threadId,
+            withProviderGuardrail(response, `Review failed to start: ${rpcError}`),
+          );
           safeMessageActivity();
           return false;
         }
@@ -647,7 +659,10 @@ export function useThreadMessaging({
         });
         pushThreadErrorMessage(
           threadId,
-          error instanceof Error ? error.message : String(error),
+          withProviderGuardrail(
+            error,
+            error instanceof Error ? error.message : String(error),
+          ),
         );
         safeMessageActivity();
         return false;
@@ -1048,7 +1063,10 @@ export function useThreadMessaging({
         });
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Failed to load apps.";
+          withProviderGuardrail(
+            error,
+            error instanceof Error ? error.message : "Failed to load apps.",
+          );
         dispatch({
           type: "addAssistantMessage",
           threadId,
@@ -1131,9 +1149,12 @@ export function useThreadMessaging({
       } catch (error) {
         pushThreadErrorMessage(
           threadId,
-          error instanceof Error
-            ? error.message
-            : "Failed to start context compaction.",
+          withProviderGuardrail(
+            error,
+            error instanceof Error
+              ? error.message
+              : "Failed to start context compaction.",
+          ),
         );
       } finally {
         safeMessageActivity();

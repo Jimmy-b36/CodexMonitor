@@ -12,6 +12,7 @@ import {
   SettingsToggleRow,
 } from "@/features/design-system/components/settings/SettingsPrimitives";
 import { FileEditorCard } from "@/features/shared/components/FileEditorCard";
+import { getProviderDisplayName } from "@/utils/providerPresentation";
 
 type SettingsCodexSectionProps = {
   appSettings: AppSettings;
@@ -146,6 +147,8 @@ export function SettingsCodexSection({
   onRefreshGlobalConfig,
   onSaveGlobalConfig,
 }: SettingsCodexSectionProps) {
+  const providerName = getProviderDisplayName(appSettings.defaultAgentProvider);
+  const providerCommandHint = appSettings.defaultAgentProvider === "copilot" ? "copilot" : "codex";
   const latestModelSlug = defaultModels[0]?.model ?? null;
   const savedModelSlug = useMemo(
     () => coerceSavedModelSlug(appSettings.lastComposerModelId, defaultModels),
@@ -229,8 +232,8 @@ export function SettingsCodexSection({
 
   return (
     <SettingsSection
-      title="Codex"
-      subtitle="Configure the Codex CLI used by CodexMonitor and validate the install."
+      title={providerName}
+      subtitle={`Configure the ${providerName} CLI used by CodexMonitor and validate the install.`}
     >
       <div className="settings-field">
         <label className="settings-field-label" htmlFor="default-agent-provider">
@@ -261,14 +264,14 @@ export function SettingsCodexSection({
 
       <div className="settings-field">
         <label className="settings-field-label" htmlFor="codex-path">
-          Default Codex path
+          {`Default ${providerName} path`}
         </label>
         <div className="settings-field-row">
           <input
             id="codex-path"
             className="settings-input"
             value={codexPathDraft}
-            placeholder="codex"
+            placeholder={providerCommandHint}
             onChange={(event) => onSetCodexPathDraft(event.target.value)}
           />
           <button
@@ -290,7 +293,7 @@ export function SettingsCodexSection({
         </div>
         <div className="settings-help">Leave empty to use the system PATH resolution.</div>
         <label className="settings-field-label" htmlFor="codex-args">
-          Default Codex args
+          {`Default ${providerName} args`}
         </label>
         <div className="settings-field-row">
           <input
@@ -312,7 +315,7 @@ export function SettingsCodexSection({
           Extra flags passed before <code>app-server</code>. Use quotes for values with spaces.
         </div>
         <div className="settings-help">
-          These settings apply to the shared Codex app-server used across all connected workspaces.
+          {`These settings apply to the shared ${providerName} app-server used across all connected workspaces.`}
         </div>
         <div className="settings-help">
           Per-thread override processing ignores unsupported flags: <code>-m</code>/
@@ -352,7 +355,7 @@ export function SettingsCodexSection({
               void onRunCodexUpdate();
             }}
             disabled={codexUpdateState.status === "running"}
-            title="Update Codex"
+            title={`Update ${providerName}`}
           >
             <Stethoscope aria-hidden />
             {codexUpdateState.status === "running" ? "Updating..." : "Update"}
@@ -362,7 +365,9 @@ export function SettingsCodexSection({
         {doctorState.result && (
           <div className={`settings-doctor ${doctorState.result.ok ? "ok" : "error"}`}>
             <div className="settings-doctor-title">
-              {doctorState.result.ok ? "Codex looks good" : "Codex issue detected"}
+              {doctorState.result.ok
+                ? `${providerName} looks good`
+                : `${providerName} issue detected`}
             </div>
             <div className="settings-doctor-body">
               <div>Version: {doctorState.result.version ?? "unknown"}</div>
@@ -389,9 +394,9 @@ export function SettingsCodexSection({
             <div className="settings-doctor-title">
               {codexUpdateState.result.ok
                 ? codexUpdateState.result.upgraded
-                  ? "Codex updated"
-                  : "Codex already up-to-date"
-                : "Codex update failed"}
+                  ? `${providerName} updated`
+                  : `${providerName} already up-to-date`
+                : `${providerName} update failed`}
             </div>
             <div className="settings-doctor-body">
               <div>Method: {codexUpdateState.result.method}</div>

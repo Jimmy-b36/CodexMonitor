@@ -12,6 +12,7 @@ import { useGlobalCodexConfigToml } from "./useGlobalCodexConfigToml";
 import { useSettingsDefaultModels } from "./useSettingsDefaultModels";
 import { buildEditorContentMeta } from "@settings/components/settingsViewHelpers";
 import { normalizeCodexArgsInput } from "@/utils/codexArgsInput";
+import { getProviderDisplayName } from "@/utils/providerPresentation";
 
 type UseSettingsCodexSectionArgs = {
   appSettings: AppSettings;
@@ -82,6 +83,7 @@ export const useSettingsCodexSection = ({
   onRunDoctor,
   onRunCodexUpdate,
 }: UseSettingsCodexSectionArgs): SettingsCodexSectionProps => {
+  const providerName = getProviderDisplayName(appSettings.defaultAgentProvider);
   const [codexPathDraft, setCodexPathDraft] = useState(appSettings.codexBin ?? "");
   const [codexArgsDraft, setCodexArgsDraft] = useState(appSettings.codexArgs ?? "");
   const [isSavingSettings, setIsSavingSettings] = useState(false);
@@ -216,7 +218,7 @@ export const useSettingsCodexSection = ({
             afterVersion: null,
             upgraded: false,
             output: null,
-            details: "Codex updates are not available in this build.",
+            details: `${providerName} updates are not available in this build.`,
           },
         });
         return;

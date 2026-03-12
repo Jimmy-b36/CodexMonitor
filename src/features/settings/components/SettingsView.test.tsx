@@ -797,6 +797,57 @@ describe("SettingsView Environments", () => {
 });
 
 describe("SettingsView Codex section", () => {
+  it("renders provider-aware copy and statuses for Copilot", async () => {
+    cleanup();
+    const onRunDoctor = vi.fn().mockResolvedValue(createDoctorResult());
+    const onRunCodexUpdate = vi.fn().mockResolvedValue(createUpdateResult());
+    render(
+      <SettingsView
+        workspaceGroups={[]}
+        groupedWorkspaces={[]}
+        ungroupedLabel="Ungrouped"
+        onClose={vi.fn()}
+        onMoveWorkspace={vi.fn()}
+        onDeleteWorkspace={vi.fn()}
+        onCreateWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onRenameWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onMoveWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onDeleteWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        onAssignWorkspaceGroup={vi.fn().mockResolvedValue(null)}
+        reduceTransparency={false}
+        onToggleTransparency={vi.fn()}
+        appSettings={{ ...baseSettings, defaultAgentProvider: "copilot" }}
+        openAppIconById={{}}
+        onUpdateAppSettings={vi.fn().mockResolvedValue(undefined)}
+        onRunDoctor={onRunDoctor}
+        onRunCodexUpdate={onRunCodexUpdate}
+        onUpdateWorkspaceSettings={vi.fn().mockResolvedValue(undefined)}
+        scaleShortcutTitle="Scale shortcut"
+        scaleShortcutText="Use Command +/-"
+        onTestNotificationSound={vi.fn()}
+        onTestSystemNotification={vi.fn()}
+        dictationModelStatus={null}
+        onDownloadDictationModel={vi.fn()}
+        onCancelDictationDownload={vi.fn()}
+        onRemoveDictationModel={vi.fn()}
+        initialSection="codex"
+      />,
+    );
+
+    expect(
+      screen.getByText("Configure the Copilot CLI used by CodexMonitor and validate the install."),
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Default Copilot path")).toBeTruthy();
+    expect(screen.getByLabelText("Default Copilot args")).toBeTruthy();
+    expect(screen.getByTitle("Update Copilot")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Run doctor" }));
+    await screen.findByText("Copilot looks good");
+
+    fireEvent.click(screen.getByRole("button", { name: "Update" }));
+    await screen.findByText("Copilot updated");
+  });
+
   it("updates default agent provider", async () => {
     cleanup();
     const onUpdateAppSettings = vi.fn().mockResolvedValue(undefined);
